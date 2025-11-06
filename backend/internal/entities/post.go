@@ -10,5 +10,6 @@ type Post struct {
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`
 	Name string `gorm:"not null"`
 	Contents string
-	AuthorID User `gorm:"foreignKey:User"`
+	AuthorID int
+	User User `gorm:"foreignKey:AuthorID"`
 }
