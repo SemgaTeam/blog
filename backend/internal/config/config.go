@@ -10,10 +10,19 @@ import (
 type (
 	Config struct {
 		App *App
+		Postgres *Postgres
 	}
 
 	App struct {
 		Address string
+		Port string
+	}
+
+	Postgres struct {
+		User string
+		Password string
+		Name string
+		Host string
 		Port string
 	}
 )
@@ -34,6 +43,12 @@ func GetConfig() *Config {
 
 		viper.SetDefault("app.address", "127.0.0.1")
 		viper.SetDefault("app.port", "8080")
+
+		viper.SetDefault("postgres.user", "postgres")
+		viper.SetDefault("postgres.name", "postgres")
+		viper.SetDefault("postgres.port", "5432")
+		viper.SetDefault("postgres.host", "db")
+		viper.SetDefault("postgres.password", "")
 
 		if err := viper.ReadInConfig(); err != nil {
 			panic(err)

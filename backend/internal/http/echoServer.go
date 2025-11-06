@@ -2,7 +2,10 @@ package http
 
 import (
 	"github.com/SemgaTeam/blog/internal/config"
+	"github.com/SemgaTeam/blog/internal/service"
+	"github.com/SemgaTeam/blog/internal/repository"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 
 	"fmt"
 )
@@ -13,14 +16,21 @@ type Server struct {
 	conf *config.Config
 }
 
-type Service struct {}
+type Service struct {
+	post service.PostService
+}
 
-func NewEchoServer(conf *config.Config) (Server, error) {
+func NewEchoServer(conf *config.Config, db *gorm.DB) (Server, error) {
 	echo := echo.New()
+
+	postRepo := repository.NewPostRepository(db)
+	postService := service.NewPostService(postRepo)
 
 	return Server{
 		echo,
-		Service{},
+		Service{
+			postService,
+		},
 		conf,
 	}, nil
 }
