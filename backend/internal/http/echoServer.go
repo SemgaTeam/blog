@@ -26,13 +26,27 @@ func NewEchoServer(conf *config.Config, db *gorm.DB) (Server, error) {
 	postRepo := repository.NewPostRepository(db)
 	postService := service.NewPostService(postRepo)
 
-	return Server{
+	s := Server{
 		echo,
 		Service{
 			postService,
 		},
 		conf,
-	}, nil
+	}
+
+	s.setupRouter()
+
+	return s, nil
+}
+
+func (s Server) setupRouter() {
+	api := s.echo.Group("/api")
+	posts := api.Group("/post")
+
+	posts.GET("/:id", s.GetPost)
+	posts.POST("/", s.CreatePost)
+	posts.PUT("/:id", s.UpdatePost)
+	posts.DELETE("/:id", s.DeletePost)
 }
 
 func (s Server) Start() {
