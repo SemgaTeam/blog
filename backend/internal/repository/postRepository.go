@@ -64,8 +64,8 @@ func (r *postRepository) UpdatePost(id int, name, contents string) (*entities.Po
 	if err := r.db.
 							Clauses(clause.Returning{}).
 							Updates(&post).
-							Scan(&post).
-							Error; err != nil {
+							Scan(&post).Error; 
+							err != nil {
 		return nil, err
 	}
 
@@ -77,12 +77,14 @@ func (r *postRepository) DeletePost(id int) (int, error) {
 		ID: id,
 	}
 
-	if err := r.db.Delete(post).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return 0, e.ErrPostNotFound
-		} else {
-			return 0, err
-		}
+	res := r.db.Delete(post)
+
+	if err := res.Error; err != nil {
+		return 0, err
+	}
+
+	if res.RowsAffected == 0 {
+		return 0, e.ErrPostNotFound
 	}
 
 	return id, nil
