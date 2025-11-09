@@ -40,6 +40,8 @@ func NewEchoServer(conf *config.Config, db *gorm.DB) (Server, error) {
 }
 
 func (s Server) setupRouter() {
+	s.echo.HTTPErrorHandler = ErrorHandler
+
 	api := s.echo.Group("/api")
 	posts := api.Group("/post")
 

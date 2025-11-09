@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/SemgaTeam/blog/internal/dto"
+	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/labstack/echo/v4"
 
 	"net/http"
@@ -13,7 +14,7 @@ func (s Server) CreatePost(c echo.Context) error {
 
 	var response dto.CreatePostResponse
 	if err := c.Bind(&request); err != nil {
-		return err
+		return e.BadRequest(err, "invalid request")
 	}
 
 	post, err := s.service.post.CreatePost(request.Name, request.Contents, request.AuthorID)
@@ -32,7 +33,7 @@ func (s Server) GetPost(c echo.Context) error {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return err
+		return e.BadRequest(err, "invalid id")
 	}
 
 	post, err := s.service.post.GetPost(id)
@@ -51,12 +52,12 @@ func (s Server) UpdatePost(c echo.Context) error {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return err
+		return e.BadRequest(err, "invalid id")
 	}
 
 	var request dto.UpdatePostRequest
 	if err := c.Bind(&request); err != nil {
-		return err
+		return e.BadRequest(err, "invalid request")
 	}
 
 	post, err := s.service.post.UpdatePost(id, request.Name, request.Contents)
