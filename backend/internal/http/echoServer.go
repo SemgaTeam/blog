@@ -56,6 +56,7 @@ func (s Server) setupRouter() {
 			return nil
 		},
 	}))
+	s.echo.HTTPErrorHandler = ErrorHandler
 
 	api := s.echo.Group("/api")
 	posts := api.Group("/post")
