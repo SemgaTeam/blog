@@ -2,8 +2,11 @@ package repository
 
 import (
 	"github.com/SemgaTeam/blog/internal/entities"
+	e "github.com/SemgaTeam/blog/internal/error"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"errors"
 )
 
 type PostRepository interface {
@@ -41,7 +44,11 @@ func (r *postRepository) GetPost(id int) (*entities.Post, error) {
 	var post entities.Post
 
 	if err := r.db.Where("id = ?", id).Take(&post).Error; err != nil {
-		return nil, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, e.ErrPostNotFound
+		} else {
+			return nil, err
+		}
 	}
 
 	return &post, nil
@@ -71,7 +78,11 @@ func (r *postRepository) DeletePost(id int) (int, error) {
 	}
 
 	if err := r.db.Delete(post).Error; err != nil {
-		return 0, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return 0, e.ErrPostNotFound
+		} else {
+			return 0, err
+		}
 	}
 
 	return id, nil
