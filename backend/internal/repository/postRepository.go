@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/SemgaTeam/blog/internal/entities"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type PostRepository interface {
@@ -39,7 +40,7 @@ func (r *postRepository) CreatePost(name, contents string, authorId int) (*entit
 func (r *postRepository) GetPost(id int) (*entities.Post, error) {
 	var post entities.Post
 
-	if err := r.db.Where("id = ?", id).Find(&post).Error; err != nil {
+	if err := r.db.Where("id = ?", id).Take(&post).Error; err != nil {
 		return nil, err
 	}
 
@@ -53,7 +54,11 @@ func (r *postRepository) UpdatePost(id int, name, contents string) (*entities.Po
 		Contents: contents,
 	}
 
-	if err := r.db.Updates(&post).Error; err != nil {
+	if err := r.db.
+							Clauses(clause.Returning{}).
+							Updates(&post).
+							Scan(&post).
+							Error; err != nil {
 		return nil, err
 	}
 

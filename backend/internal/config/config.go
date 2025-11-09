@@ -41,7 +41,7 @@ func GetConfig() *Config {
 		viper.AutomaticEnv()
 		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-		viper.SetDefault("app.address", "127.0.0.1")
+		viper.SetDefault("app.address", "")
 		viper.SetDefault("app.port", "8080")
 
 		viper.SetDefault("postgres.user", "postgres")
