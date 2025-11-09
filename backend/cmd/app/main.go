@@ -3,14 +3,17 @@ package main
 import (
 	"github.com/SemgaTeam/blog/internal/config"
 	"github.com/SemgaTeam/blog/internal/http"
-	"github.com/SemgaTeam/blog/internal/repository"
+	"github.com/SemgaTeam/blog/internal/db"
 )
 
 func main() {
 	conf := config.GetConfig()	
 
-	db, err := repository.NewPostgresConnection(conf.Postgres)
+	if err := db.RunMigrations(conf.Postgres, "migrations"); err != nil {
+		panic(err)
+	}
 
+	db, err := db.NewPostgresConnection(conf.Postgres)
 	if err != nil {
 		panic(err)
 	}

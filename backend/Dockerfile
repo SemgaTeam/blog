@@ -14,6 +14,7 @@ WORKDIR /app
 
 COPY --from=builder /usr/src/app/config.yaml .
 COPY --from=builder /usr/src/app/application ./app
+COPY migrations migrations
 
 EXPOSE 8080
 
