@@ -18,6 +18,8 @@ func main() {
 		panic(err)
 	}
 
+	db = db.Debug()
+
 	s, err := http.NewEchoServer(conf, db)
 	if err != nil {
 		panic(err)

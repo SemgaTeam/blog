@@ -39,7 +39,7 @@ func (r *postRepository) CreatePost(name, contents string, authorId int) (*entit
 func (r *postRepository) GetPost(id int) (*entities.Post, error) {
 	var post entities.Post
 
-	if err := r.db.Where("id = ?", id).Find(&post).Error; err != nil {
+	if err := r.db.Where("id = ?", id).Take(&post).Error; err != nil {
 		return nil, err
 	}
 
