@@ -51,8 +51,9 @@ func (s Server) setupRouter() {
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 			if v.Error != nil {
 				fmt.Printf("Error %s: %v %v %v\n", v.Error.Error(), v.Method, v.URIPath, v.Status)
+			} else {
+				fmt.Printf("%v %v %v\n", v.Method, v.URIPath, v.Status)
 			}
-			fmt.Printf("%v %v %v\n", v.Method, v.URIPath, v.Status)
 			return nil
 		},
 	}))
@@ -62,7 +63,8 @@ func (s Server) setupRouter() {
 	posts := api.Group("/post")
 
 	posts.GET("/:id", s.GetPost)
-	posts.POST("/", s.CreatePost)
+	posts.GET("", s.GetPosts)
+	posts.POST("", s.CreatePost)
 	posts.PUT("/:id", s.UpdatePost)
 	posts.DELETE("/:id", s.DeletePost)
 }

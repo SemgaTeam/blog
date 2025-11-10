@@ -24,7 +24,7 @@ func (s Server) CreatePost(c echo.Context) error {
 
 	response = post.ToDTO()
 
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusCreated, response)
 }
 
 func (s Server) GetPost(c echo.Context) error {
@@ -42,6 +42,29 @@ func (s Server) GetPost(c echo.Context) error {
 	}
 
 	response = post.ToDTO()
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func (s Server) GetPosts(c echo.Context) error {
+	var params dto.GetPostParams
+
+	if err := c.Bind(&params); err != nil {
+		return e.BadRequest(err, "invalid query parameters")
+	}
+
+	posts, total, err := s.service.post.GetPosts(params)
+	if err != nil {
+		return err
+	}
+
+	var response dto.GetPostsResponse
+
+	for _, post := range posts {
+		response.Data = append(response.Data, post.ToDTO())
+	}
+
+	response.Total = total
 
 	return c.JSON(http.StatusOK, response)
 }
