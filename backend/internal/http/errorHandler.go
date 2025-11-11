@@ -26,6 +26,9 @@ func ErrorHandler(err error, c echo.Context) {
 	case errors.Is(err, e.ErrPostNotFound):
 		appErr = e.BadRequest(err, "post not found")
 
+	case errors.Is(err, e.ErrUserNotFound):
+		appErr = e.BadRequest(err, "user not found")
+
 	default:
 		appErr = e.Internal(err)
 	}

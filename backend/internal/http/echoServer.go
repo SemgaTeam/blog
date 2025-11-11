@@ -19,6 +19,7 @@ type Server struct {
 
 type Service struct {
 	post service.PostService
+	user service.UserService
 }
 
 func NewEchoServer(conf *config.Config, db *gorm.DB) (Server, error) {
@@ -27,10 +28,14 @@ func NewEchoServer(conf *config.Config, db *gorm.DB) (Server, error) {
 	postRepo := repository.NewPostRepository(db)
 	postService := service.NewPostService(postRepo)
 
+	userRepo := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepo)
+
 	s := Server{
 		echo,
 		Service{
 			postService,
+			userService,
 		},
 		conf,
 	}
@@ -61,12 +66,18 @@ func (s Server) setupRouter() {
 
 	api := s.echo.Group("/api")
 	posts := api.Group("/post")
+	users := api.Group("/user")
 
 	posts.GET("/:id", s.GetPost)
 	posts.GET("", s.GetPosts)
 	posts.POST("", s.CreatePost)
 	posts.PUT("/:id", s.UpdatePost)
 	posts.DELETE("/:id", s.DeletePost)
+
+	users.GET("/:id", s.GetUser)
+	users.POST("", s.CreateUser)
+	users.PUT("/:id", s.UpdateUser)
+	users.DELETE("/:id", s.DeleteUser)
 }
 
 func (s Server) Start() {
