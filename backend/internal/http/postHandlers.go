@@ -99,7 +99,7 @@ func (s Server) DeletePost(c echo.Context) error {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return err
+		return e.BadRequest(err, "invalid id")
 	}
 
 	_, err = s.service.post.DeletePost(id)
