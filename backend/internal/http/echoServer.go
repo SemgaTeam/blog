@@ -50,7 +50,7 @@ func (s Server) setupRouter() {
 	s.echo.Use(middleware.Recover())
 	s.echo.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus: true,
-		LogURIPath:    true,
+		LogURIPath: true,
 		LogMethod: true,
 		LogError: true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {

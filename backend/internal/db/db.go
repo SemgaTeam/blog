@@ -11,11 +11,15 @@ import (
 	"fmt"
 )
 
-func NewPostgresConnection(conf *config.Postgres) (*gorm.DB, error) {
-	dsn := postgresDSN(conf)
+func NewPostgresConnection(conf *config.Config) (*gorm.DB, error) {
+	dsn := postgresDSN(conf.Postgres)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{TranslateError: true})	
 	if err != nil {
 		return nil, err
+	}
+
+	if conf.App.Debug {
+		db = db.Debug()
 	}
 
 	return db, nil
