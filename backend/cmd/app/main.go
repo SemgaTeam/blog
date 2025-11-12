@@ -13,12 +13,10 @@ func main() {
 		panic(err)
 	}
 
-	db, err := db.NewPostgresConnection(conf.Postgres)
+	db, err := db.NewPostgresConnection(conf)
 	if err != nil {
 		panic(err)
 	}
-
-	db = db.Debug()
 
 	s, err := http.NewEchoServer(conf, db)
 	if err != nil {

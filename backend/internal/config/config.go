@@ -16,6 +16,7 @@ type (
 	App struct {
 		Address string
 		Port string
+		Debug bool
 	}
 
 	Postgres struct {
@@ -43,6 +44,7 @@ func GetConfig() *Config {
 
 		viper.SetDefault("app.address", "")
 		viper.SetDefault("app.port", "8080")
+		viper.SetDefault("app.debug", "true")
 
 		viper.SetDefault("postgres.user", "postgres")
 		viper.SetDefault("postgres.name", "postgres")
