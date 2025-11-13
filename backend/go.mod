@@ -7,6 +7,8 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/pressly/goose/v3 v3.26.0
 	github.com/spf13/viper v1.21.0
+	go.uber.org/zap v1.27.0
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
 )
