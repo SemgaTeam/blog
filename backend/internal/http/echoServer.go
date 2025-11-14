@@ -62,15 +62,19 @@ func (s Server) setupRouter() {
 		LogURIPath: true,
 		LogMethod: true,
 		LogError: true,
+		LogRequestID: true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 		if v.Error != nil {
-			log.Log.Info(fmt.Sprintf("%v %v %v", v.Method, v.URI, v.Status), zap.Error(v.Error))
+			log.Log.Info(fmt.Sprintf("%v %v %v", v.Method, v.URIPath, v.Status), zap.Error(v.Error), zap.String("request_id", v.RequestID))
 		}	else {
-			log.Log.Info(fmt.Sprintf("%v %v %v", v.Method, v.URI, v.Status))
+			log.Log.Info(fmt.Sprintf("%v %v %v", v.Method, v.URIPath, v.Status), zap.String("request_id", v.RequestID))
 		}
 		return nil
 		},
 	}))
+	s.echo.Use(middleware.RequestID())
+	s.echo.Use(SetLoggerMiddleware(log.Log))
+
 	s.echo.HTTPErrorHandler = ErrorHandler
 
 	api := s.echo.Group("/api")
