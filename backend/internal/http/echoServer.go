@@ -3,9 +3,11 @@ package http
 import (
 	"github.com/SemgaTeam/blog/internal/config"
 	"github.com/SemgaTeam/blog/internal/service"
+	"github.com/SemgaTeam/blog/internal/log"
 	"github.com/SemgaTeam/blog/internal/repository"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 
 	"fmt"
@@ -26,10 +28,16 @@ func NewEchoServer(conf *config.Config, db *gorm.DB) (Server, error) {
 	echo := echo.New()
 
 	postRepo := repository.NewPostRepository(db)
+	log.Log.Debug("initialized post repository")
+
 	postService := service.NewPostService(postRepo)
+	log.Log.Debug("initialized post service")
 
 	userRepo := repository.NewUserRepository(db)
+	log.Log.Debug("initialized user repository")
+
 	userService := service.NewUserService(userRepo)
+	log.Log.Debug("initialized user service")
 
 	s := Server{
 		echo,
@@ -41,6 +49,7 @@ func NewEchoServer(conf *config.Config, db *gorm.DB) (Server, error) {
 	}
 
 	s.setupRouter()
+	log.Log.Info("setup router completed")
 
 	return s, nil
 }
@@ -53,15 +62,19 @@ func (s Server) setupRouter() {
 		LogURIPath: true,
 		LogMethod: true,
 		LogError: true,
+		LogRequestID: true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-			if v.Error != nil {
-				fmt.Printf("Error %s: %v %v %v\n", v.Error.Error(), v.Method, v.URIPath, v.Status)
-			} else {
-				fmt.Printf("%v %v %v\n", v.Method, v.URIPath, v.Status)
-			}
-			return nil
+		if v.Error != nil {
+			log.Log.Info(fmt.Sprintf("%v %v %v", v.Method, v.URIPath, v.Status), zap.Error(v.Error), zap.String("request_id", v.RequestID))
+		}	else {
+			log.Log.Info(fmt.Sprintf("%v %v %v", v.Method, v.URIPath, v.Status), zap.String("request_id", v.RequestID))
+		}
+		return nil
 		},
 	}))
+	s.echo.Use(middleware.RequestID())
+	s.echo.Use(SetLoggerMiddleware(log.Log))
+
 	s.echo.HTTPErrorHandler = ErrorHandler
 
 	api := s.echo.Group("/api")
