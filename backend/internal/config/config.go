@@ -11,6 +11,7 @@ type (
 	Config struct {
 		App *App
 		Postgres *Postgres
+		Token *Token
 	}
 
 	App struct {
@@ -25,6 +26,11 @@ type (
 		Name string
 		Host string
 		Port string
+	}
+
+	Token struct {
+		Secret string
+		SigningMethod string `mapstructure:"signingMethod"`
 	}
 )
 
