@@ -60,6 +60,7 @@ func GetConfig() *Config {
 		viper.SetDefault("postgres.host", "db")
 		viper.SetDefault("postgres.password", "")
 
+		viper.SetDefault("auth.signingMethod", "HS256")
 		viper.SetDefault("auth.accessExpirationSecs", 60*60*24)
 		viper.SetDefault("auth.refreshExpirationSecs", 60*60*24*7)
 

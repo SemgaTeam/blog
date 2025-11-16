@@ -22,9 +22,10 @@ type Server struct {
 type Service struct {
 	post service.PostService
 	user service.UserService
+	auth service.AuthService
 }
 
-func NewEchoServer(conf *config.Config, db *gorm.DB) (Server, error) {
+func NewEchoServer(conf *config.Config, db *gorm.DB) (*Server, error) {
 	echo := echo.New()
 
 	postRepo := repository.NewPostRepository(db)
@@ -39,11 +40,26 @@ func NewEchoServer(conf *config.Config, db *gorm.DB) (Server, error) {
 	userService := service.NewUserService(userRepo)
 	log.Log.Debug("initialized user service")
 
+	tokenRepo, err := repository.NewTokenRepository(conf)
+	if err != nil {
+		log.Log.Fatal("token repository initialization error", zap.Error(err))
+		return nil, err
+	}
+	log.Log.Debug("initialized token repository")
+
+	authService, err := service.NewAuthService(conf.Auth, tokenRepo, userRepo)
+	if err != nil {
+		log.Log.Fatal("auth service initialization error", zap.Error(err))
+		return nil, err
+	}
+	log.Log.Debug("initialized auth service")
+
 	s := Server{
 		echo,
 		Service{
 			postService,
 			userService,
+			authService,
 		},
 		conf,
 	}
@@ -51,7 +67,7 @@ func NewEchoServer(conf *config.Config, db *gorm.DB) (Server, error) {
 	s.setupRouter()
 	log.Log.Info("setup router completed")
 
-	return s, nil
+	return &s, nil
 }
 
 func (s Server) setupRouter() {
@@ -80,6 +96,7 @@ func (s Server) setupRouter() {
 	api := s.echo.Group("/api")
 	posts := api.Group("/post")
 	users := api.Group("/user")
+	auth := api.Group("/auth")
 
 	posts.GET("/:id", s.GetPost)
 	posts.GET("", s.GetPosts)
@@ -91,6 +108,10 @@ func (s Server) setupRouter() {
 	users.POST("", s.CreateUser)
 	users.PUT("/:id", s.UpdateUser)
 	users.DELETE("/:id", s.DeleteUser)
+
+	auth.POST("/signin", s.SignIn)
+	auth.POST("/login", s.LogIn)
+	auth.POST("/logout", s.LogOut)
 }
 
 func (s Server) Start() {

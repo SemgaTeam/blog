@@ -2,6 +2,7 @@ package repository
 
 import (
 	"github.com/SemgaTeam/blog/internal/entities"
+	"github.com/SemgaTeam/blog/internal/utils"
 	"github.com/SemgaTeam/blog/internal/dto"
 	e "github.com/SemgaTeam/blog/internal/error"
 	"gorm.io/gorm"
@@ -82,7 +83,7 @@ func (r *postRepository) GetPosts(params dto.GetPostParams) ([]entities.Post, in
 	}
 
 	allowedSortingFields := []string{"created_at", "updated_at"}
-	if err := handleSorting(q, params.SortField, params.SortOrder, allowedSortingFields); err != nil {
+	if err := utils.HandleSorting(q, params.SortField, params.SortOrder, allowedSortingFields); err != nil {
 		return nil, 0, err
 	}
 

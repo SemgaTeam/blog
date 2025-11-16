@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/SemgaTeam/blog/internal/entities"
 	"github.com/SemgaTeam/blog/internal/repository"
+	"github.com/SemgaTeam/blog/internal/utils"
 	"go.uber.org/zap"
 
 	"context"
@@ -32,7 +33,7 @@ func NewUserService(userRepo repository.UserRepository) UserService {
 }
 
 func (s *userService) CreateUser(ctx context.Context, name, password string) (*entities.User, error) {
-	log := FromContext(ctx)
+	log := utils.FromContext(ctx)
 
 	user, err := s.repo.user.CreateUser(name, password)
 	if err != nil {
@@ -45,7 +46,7 @@ func (s *userService) CreateUser(ctx context.Context, name, password string) (*e
 }
 
 func (s *userService) GetUserById(ctx context.Context, id int) (*entities.User, error) {
-	log := FromContext(ctx)
+	log := utils.FromContext(ctx)
 
 	user, err := s.repo.user.GetUserById(id)
 	if err != nil {
@@ -58,7 +59,7 @@ func (s *userService) GetUserById(ctx context.Context, id int) (*entities.User, 
 }
 
 func (s *userService) UpdateUser(ctx context.Context, id int, name, password string) (*entities.User, error) {
-	log := FromContext(ctx)
+	log := utils.FromContext(ctx)
 
 	user, err := s.repo.user.UpdateUser(id, name, password)
 	if err != nil {
@@ -71,7 +72,7 @@ func (s *userService) UpdateUser(ctx context.Context, id int, name, password str
 }
 
 func (s *userService) DeleteUser(ctx context.Context, id int) (int, error) {
-	log := FromContext(ctx)
+	log := utils.FromContext(ctx)
 
 	_, err := s.repo.user.DeleteUser(id)
 	if err != nil {

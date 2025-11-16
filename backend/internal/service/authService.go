@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/SemgaTeam/blog/internal/entities"
+	"github.com/SemgaTeam/blog/internal/utils"
 	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/SemgaTeam/blog/internal/config"
 	"github.com/SemgaTeam/blog/internal/repository"
@@ -24,12 +25,13 @@ type authServiceRepo struct {
 	user repository.UserRepository
 }
 
-func NewAuthService(tokenRepo repository.TokenRepository, userRepo repository.UserRepository) (AuthService, error) {
+func NewAuthService(conf *config.Auth, tokenRepo repository.TokenRepository, userRepo repository.UserRepository) (AuthService, error) {
 	return &authService{
 		repo: authServiceRepo{
 			token: tokenRepo,
 			user: userRepo,
 		},
+		conf: conf,
 	}, nil
 }
 
@@ -58,6 +60,23 @@ func (s *authService) SignIn(ctx context.Context, name, password string) (*entit
 	}
 
 	authToken, refreshToken, err := s.generateTokens(user.ID, s.conf.AccessExpirationSecs, s.conf.RefreshExpirationSecs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return authToken, refreshToken, nil
+}
+
+func (s *authService) generateTokens(userId int, accessExpirationSecs, refreshExpirationSecs int) (*entities.AuthToken, *entities.AuthToken, error) {
+	authClaims := utils.GetClaims(userId, accessExpirationSecs)
+	refreshClaims := utils.GetClaims(userId, refreshExpirationSecs)
+
+	authToken, err := s.repo.token.GenerateAndSignToken(authClaims)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	refreshToken, err := s.repo.token.GenerateAndSignToken(refreshClaims)
 	if err != nil {
 		return nil, nil, err
 	}
