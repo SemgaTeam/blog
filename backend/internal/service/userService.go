@@ -10,7 +10,7 @@ import (
 
 type UserService interface {
 	CreateUser(context.Context, string, string) (*entities.User, error)
-	GetUser(context.Context, int) (*entities.User, error)
+	GetUserById(context.Context, int) (*entities.User, error)
 	UpdateUser(context.Context, int, string, string) (*entities.User, error)
 	DeleteUser(context.Context, int) (int, error)
 }
@@ -44,10 +44,10 @@ func (s *userService) CreateUser(ctx context.Context, name, password string) (*e
 	return user, nil
 }
 
-func (s *userService) GetUser(ctx context.Context, id int) (*entities.User, error) {
+func (s *userService) GetUserById(ctx context.Context, id int) (*entities.User, error) {
 	log := FromContext(ctx)
 
-	user, err := s.repo.user.GetUser(id)
+	user, err := s.repo.user.GetUserById(id)
 	if err != nil {
 		log.Info("get user error", zap.Error(err), zap.Int("id", id))
 		return nil, err

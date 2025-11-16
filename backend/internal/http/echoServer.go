@@ -87,7 +87,7 @@ func (s Server) setupRouter() {
 	posts.PUT("/:id", s.UpdatePost)
 	posts.DELETE("/:id", s.DeletePost)
 
-	users.GET("/:id", s.GetUser)
+	users.GET("/:id", s.GetUserById)
 	users.POST("", s.CreateUser)
 	users.PUT("/:id", s.UpdateUser)
 	users.DELETE("/:id", s.DeleteUser)

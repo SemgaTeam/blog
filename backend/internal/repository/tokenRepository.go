@@ -12,14 +12,14 @@ type TokenRepository interface {
 }
 
 type tokenRepository struct {
-	conf *config.Token
+	conf *config.Auth
 	signingMethod jwt.SigningMethod
 }
 
 func NewTokenRepository(conf *config.Config) (TokenRepository, error) {
 	var signingMethod jwt.SigningMethod
 
-	switch conf.Token.SigningMethod {
+	switch conf.Auth.SigningMethod {
 	case "HS256":
 		signingMethod = jwt.SigningMethodHS256
 	default:
@@ -27,7 +27,7 @@ func NewTokenRepository(conf *config.Config) (TokenRepository, error) {
 	}
 
 	return &tokenRepository{
-		conf: conf.Token,
+		conf: conf.Auth,
 		signingMethod: signingMethod,
 	}, nil
 }

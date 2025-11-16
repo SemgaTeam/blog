@@ -11,7 +11,7 @@ type (
 	Config struct {
 		App *App
 		Postgres *Postgres
-		Token *Token
+		Auth *Auth
 	}
 
 	App struct {
@@ -28,9 +28,11 @@ type (
 		Port string
 	}
 
-	Token struct {
+	Auth struct {
 		Secret string
 		SigningMethod string `mapstructure:"signingMethod"`
+		AccessExpirationSecs int `mapstructure:"accessExpirationSecs"`
+		RefreshExpirationSecs int `mapstructure:"refreshExpirationSecs"`
 	}
 )
 
@@ -57,6 +59,9 @@ func GetConfig() *Config {
 		viper.SetDefault("postgres.port", "5432")
 		viper.SetDefault("postgres.host", "db")
 		viper.SetDefault("postgres.password", "")
+
+		viper.SetDefault("auth.accessExpirationSecs", 60*60*24)
+		viper.SetDefault("auth.refreshExpirationSecs", 60*60*24*7)
 
 		if err := viper.ReadInConfig(); err != nil {
 			panic(err)

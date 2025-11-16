@@ -11,7 +11,8 @@ import (
 
 type UserRepository interface {
 	CreateUser(string, string) (*entities.User, error)
-	GetUser(int) (*entities.User, error)
+	GetUserById(int) (*entities.User, error)
+	GetUserByName(string) (*entities.User, error)
 	UpdateUser(int, string, string) (*entities.User, error)
 	DeleteUser(int) (int, error)
 }
@@ -43,10 +44,24 @@ func (r *userRepository) CreateUser(name, password string) (*entities.User, erro
 	return &user, nil
 }
 
-func (r *userRepository) GetUser(id int) (*entities.User, error) {
+func (r *userRepository) GetUserById(id int) (*entities.User, error) {
 	var user entities.User
 
 	if err := r.db.Where("id = ?", id).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, e.ErrUserNotFound
+		} else {
+			return nil, e.Internal(err)
+		}
+	}
+
+	return &user, nil
+}
+
+func (r *userRepository) GetUserByName(name string) (*entities.User, error) {
+	var user entities.User
+
+	if err := r.db.Where("name = ?", name).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, e.ErrUserNotFound
 		} else {

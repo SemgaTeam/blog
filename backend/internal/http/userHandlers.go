@@ -27,7 +27,7 @@ func (s Server) CreateUser(c echo.Context) error {
 	return c.JSON(http.StatusCreated, response)
 }
 
-func (s Server) GetUser(c echo.Context) error {
+func (s Server) GetUserById(c echo.Context) error {
 	ctx := c.Request().Context()
 	var response dto.GetUserResponse
 	
@@ -37,7 +37,7 @@ func (s Server) GetUser(c echo.Context) error {
 		return e.BadRequest(err, "invalid id")
 	}
 
-	user, err := s.service.user.GetUser(ctx, id)
+	user, err := s.service.user.GetUserById(ctx, id)
 	if err != nil {
 		return err
 	}
