@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/SemgaTeam/blog/internal/entities"
 	"github.com/SemgaTeam/blog/internal/repository"
+	"github.com/SemgaTeam/blog/internal/utils"
 	"go.uber.org/zap"
 
 	"context"
@@ -10,7 +11,7 @@ import (
 
 type UserService interface {
 	CreateUser(context.Context, string, string) (*entities.User, error)
-	GetUser(context.Context, int) (*entities.User, error)
+	GetUserById(context.Context, int) (*entities.User, error)
 	UpdateUser(context.Context, int, string, string) (*entities.User, error)
 	DeleteUser(context.Context, int) (int, error)
 }
@@ -32,7 +33,7 @@ func NewUserService(userRepo repository.UserRepository) UserService {
 }
 
 func (s *userService) CreateUser(ctx context.Context, name, password string) (*entities.User, error) {
-	log := FromContext(ctx)
+	log := utils.GetLoggerFromContext(ctx)
 
 	user, err := s.repo.user.CreateUser(name, password)
 	if err != nil {
@@ -44,10 +45,10 @@ func (s *userService) CreateUser(ctx context.Context, name, password string) (*e
 	return user, nil
 }
 
-func (s *userService) GetUser(ctx context.Context, id int) (*entities.User, error) {
-	log := FromContext(ctx)
+func (s *userService) GetUserById(ctx context.Context, id int) (*entities.User, error) {
+	log := utils.GetLoggerFromContext(ctx)
 
-	user, err := s.repo.user.GetUser(id)
+	user, err := s.repo.user.GetUserById(id)
 	if err != nil {
 		log.Info("get user error", zap.Error(err), zap.Int("id", id))
 		return nil, err
@@ -58,7 +59,7 @@ func (s *userService) GetUser(ctx context.Context, id int) (*entities.User, erro
 }
 
 func (s *userService) UpdateUser(ctx context.Context, id int, name, password string) (*entities.User, error) {
-	log := FromContext(ctx)
+	log := utils.GetLoggerFromContext(ctx)
 
 	user, err := s.repo.user.UpdateUser(id, name, password)
 	if err != nil {
@@ -71,7 +72,7 @@ func (s *userService) UpdateUser(ctx context.Context, id int, name, password str
 }
 
 func (s *userService) DeleteUser(ctx context.Context, id int) (int, error) {
-	log := FromContext(ctx)
+	log := utils.GetLoggerFromContext(ctx)
 
 	_, err := s.repo.user.DeleteUser(id)
 	if err != nil {

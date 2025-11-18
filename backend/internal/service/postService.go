@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/SemgaTeam/blog/internal/entities"
 	"github.com/SemgaTeam/blog/internal/dto"
+	"github.com/SemgaTeam/blog/internal/utils"
 	"github.com/SemgaTeam/blog/internal/repository"
 	"go.uber.org/zap"
 
@@ -34,7 +35,7 @@ func NewPostService(postRepo repository.PostRepository) PostService {
 }
 
 func (s *postService) CreatePost(ctx context.Context, name, contents string, authorId int) (*entities.Post, error) {
-	log := FromContext(ctx)
+	log := utils.GetLoggerFromContext(ctx)
 
 	post, err := s.repo.post.CreatePost(name, contents, authorId)
 	if err != nil {
@@ -47,7 +48,7 @@ func (s *postService) CreatePost(ctx context.Context, name, contents string, aut
 }
 
 func (s *postService) GetPost(ctx context.Context, id int) (*entities.Post, error) {
-	log := FromContext(ctx)
+	log := utils.GetLoggerFromContext(ctx)
 
 	post, err := s.repo.post.GetPost(id)
 	if err != nil {
@@ -60,7 +61,7 @@ func (s *postService) GetPost(ctx context.Context, id int) (*entities.Post, erro
 }
 
 func (s *postService) GetPosts(ctx context.Context, params dto.GetPostParams) ([]entities.Post, int64, error) {
-	log := FromContext(ctx)
+	log := utils.GetLoggerFromContext(ctx)
 
 	posts, total, err := s.repo.post.GetPosts(params)
 	if err != nil {
@@ -73,7 +74,7 @@ func (s *postService) GetPosts(ctx context.Context, params dto.GetPostParams) ([
 }
 
 func (s *postService) UpdatePost(ctx context.Context, id int, name, contents string) (*entities.Post, error) {
-	log := FromContext(ctx)
+	log := utils.GetLoggerFromContext(ctx)
 
 	post, err := s.repo.post.UpdatePost(id, name, contents)
 	if err != nil {
@@ -86,7 +87,7 @@ func (s *postService) UpdatePost(ctx context.Context, id int, name, contents str
 }
 
 func (s *postService) DeletePost(ctx context.Context, id int) (int, error) {
-	log := FromContext(ctx)
+	log := utils.GetLoggerFromContext(ctx)
 
 	_, err := s.repo.post.DeletePost(id)
 	if err != nil {
