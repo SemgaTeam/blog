@@ -8,12 +8,13 @@ import (
 	"go.uber.org/zap"
 
 	"net/http"
+	"strconv"
 )
 
 func (s Server) LogIn(c echo.Context) error {
 	var request dto.LogInRequest	
 	ctx := c.Request().Context()
-	log := utils.FromContext(ctx)
+	log := utils.GetLoggerFromContext(ctx)
 
 	if err := c.Bind(&request); err != nil {
 		return e.BadRequest(err, "invalid request body")
@@ -37,7 +38,7 @@ func (s Server) LogIn(c echo.Context) error {
 func (s Server) SignIn(c echo.Context) error {
 	var request dto.SignInRequest	
 	ctx := c.Request().Context()
-	log := utils.FromContext(ctx)
+	log := utils.GetLoggerFromContext(ctx)
 
 	if err := c.Bind(&request); err != nil {
 		return e.BadRequest(err, "invalid request body")
@@ -66,6 +67,30 @@ func (s Server) LogOut(c echo.Context) error {
 
 	c.SetCookie(&accessCookie)
 	c.SetCookie(&refreshCookie)
+
+	return c.NoContent(http.StatusNoContent)
+}
+
+func (s Server) RefreshTokens(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	claims, err := utils.GetClaimsFromContext(c, "refresh")
+	if err != nil {
+		return err
+	}
+
+	id, err := strconv.Atoi(claims.Subject)
+	if err != nil {
+		return e.Unauthorized(err, "invalid user id")
+	}
+
+	accessToken, refreshToken, err := s.service.auth.RefreshTokens(ctx, id)
+
+	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, accessToken.Claims.ExpiresAt.Time)
+	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, refreshToken.Claims.ExpiresAt.Time)
+
+	c.SetCookie(accessCookie)
+	c.SetCookie(refreshCookie)
 
 	return c.NoContent(http.StatusNoContent)
 }

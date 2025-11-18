@@ -1,21 +1,22 @@
 package utils
 
 import (
-
 	"github.com/SemgaTeam/blog/internal/entities"
 	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 
 	"context"
-	"strconv"
-	"gorm.io/gorm"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
+	"errors"
 )
 
-func FromContext(ctx context.Context) *zap.Logger { // get logger from context
+func GetLoggerFromContext(ctx context.Context) *zap.Logger { // get logger from context
 	if v := ctx.Value("logger"); v != nil {
 		if logger, ok := v.(*zap.Logger); ok {
 			return logger
@@ -82,4 +83,14 @@ func HandleSorting(q *gorm.DB, sortField, sortOrder string, allowedFields []stri
 	q = q.Order(sortField + " " + sortOrder)
 
 	return nil
+}
+
+func GetClaimsFromContext(c echo.Context, tokenType string) (*entities.Claims, error) {
+	token := c.Get(tokenType).(*jwt.Token)
+	claims, ok := token.Claims.(*entities.Claims) 
+	if ok != true {
+		return nil, e.Internal(errors.New("no claims"))
+	}
+
+	return claims, nil
 }

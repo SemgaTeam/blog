@@ -13,6 +13,7 @@ import (
 type AuthService interface {
 	LogIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error)
 	SignIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error)
+	RefreshTokens(context.Context, int) (*entities.AuthToken, *entities.AuthToken, error)
 }
 
 type authService struct {
@@ -60,6 +61,15 @@ func (s *authService) SignIn(ctx context.Context, name, password string) (*entit
 	}
 
 	authToken, refreshToken, err := s.generateTokens(user.ID, s.conf.AccessExpirationSecs, s.conf.RefreshExpirationSecs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return authToken, refreshToken, nil
+}
+
+func (s *authService) RefreshTokens(ctx context.Context, userId int) (*entities.AuthToken, *entities.AuthToken, error) {
+	authToken, refreshToken, err := s.generateTokens(userId, s.conf.AccessExpirationSecs, s.conf.RefreshExpirationSecs)
 	if err != nil {
 		return nil, nil, err
 	}
