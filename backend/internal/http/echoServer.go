@@ -37,6 +37,9 @@ func NewEchoServer(conf *config.Config, db *gorm.DB) (*Server, error) {
 	userRepo := repository.NewUserRepository(db)
 	log.Log.Debug("initialized user repository")
 
+	hashRepo := repository.NewHashRepository(conf.Hash)
+	log.Log.Debug("initialized hash repository")
+
 	userService := service.NewUserService(userRepo)
 	log.Log.Debug("initialized user service")
 
@@ -47,7 +50,7 @@ func NewEchoServer(conf *config.Config, db *gorm.DB) (*Server, error) {
 	}
 	log.Log.Debug("initialized token repository")
 
-	authService, err := service.NewAuthService(conf.Auth, tokenRepo, userRepo)
+	authService, err := service.NewAuthService(conf.Auth, tokenRepo, userRepo, hashRepo)
 	if err != nil {
 		log.Log.Fatal("auth service initialization error", zap.Error(err))
 		return nil, err
