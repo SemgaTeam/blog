@@ -1,11 +1,12 @@
 package service
 
 import (
-	"github.com/SemgaTeam/blog/internal/entities"
-	"github.com/SemgaTeam/blog/internal/utils"
-	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/SemgaTeam/blog/internal/config"
+	"github.com/SemgaTeam/blog/internal/entities"
+	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/SemgaTeam/blog/internal/repository"
+	"github.com/SemgaTeam/blog/internal/utils"
+	"go.uber.org/zap"
 
 	"context"
 )
@@ -24,13 +25,15 @@ type authService struct {
 type authServiceRepo struct {
 	token repository.TokenRepository
 	user repository.UserRepository
+	hash repository.HashRepository
 }
 
-func NewAuthService(conf *config.Auth, tokenRepo repository.TokenRepository, userRepo repository.UserRepository) (AuthService, error) {
+func NewAuthService(conf *config.Auth, tokenRepo repository.TokenRepository, userRepo repository.UserRepository, hashRepo repository.HashRepository) (AuthService, error) {
 	return &authService{
 		repo: authServiceRepo{
 			token: tokenRepo,
 			user: userRepo,
+			hash: hashRepo,
 		},
 		conf: conf,
 	}, nil
@@ -42,7 +45,7 @@ func (s *authService) LogIn(ctx context.Context, name, password string) (*entiti
 		return nil, nil, err
 	}
 
-	if user.Password != password {
+	if !s.repo.hash.IsPasswordValid(password, user.Password) {
 		return nil, nil, e.ErrInvalidCredentials
 	}
 
@@ -55,7 +58,15 @@ func (s *authService) LogIn(ctx context.Context, name, password string) (*entiti
 }
 
 func (s *authService) SignIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error) {
-	user, err := s.repo.user.CreateUser(name, password)
+	log := utils.GetLoggerFromContext(ctx)
+
+	hashedPassword, err := s.repo.hash.HashPassword(password)
+	if err != nil {
+		log.Error("hashing failed", zap.Error(err))
+		return nil, nil, err
+	}
+
+	user, err := s.repo.user.CreateUser(name, hashedPassword)
 	if err != nil {
 		return nil, nil, err
 	}

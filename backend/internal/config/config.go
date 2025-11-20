@@ -12,6 +12,7 @@ type (
 		App *App
 		Postgres *Postgres
 		Auth *Auth
+		Hash *Hash
 	}
 
 	App struct {
@@ -33,6 +34,10 @@ type (
 		SigningMethod string `mapstructure:"signingMethod"`
 		AccessExpirationSecs int `mapstructure:"accessExpirationSecs"`
 		RefreshExpirationSecs int `mapstructure:"refreshExpirationSecs"`
+	}
+
+	Hash struct {
+		Cost int
 	}
 )
 
@@ -63,6 +68,8 @@ func GetConfig() *Config {
 		viper.SetDefault("auth.signingMethod", "HS256")
 		viper.SetDefault("auth.accessExpirationSecs", 60*60*24)
 		viper.SetDefault("auth.refreshExpirationSecs", 60*60*24*7)
+
+		viper.SetDefault("hash.cost", 10)
 
 		if err := viper.ReadInConfig(); err != nil {
 			panic(err)

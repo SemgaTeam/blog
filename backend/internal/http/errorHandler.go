@@ -29,6 +29,9 @@ func ErrorHandler(err error, c echo.Context) {
 	case errors.Is(err, e.ErrUserNotFound):
 		appErr = e.BadRequest(err, "user not found")
 
+	case errors.Is(err, e.ErrInvalidCredentials):
+		appErr = e.Unauthorized(err, "invalid credentials")
+
 	default:
 		appErr = e.Internal(err)
 	}
