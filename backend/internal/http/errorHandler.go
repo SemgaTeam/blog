@@ -32,6 +32,9 @@ func ErrorHandler(err error, c echo.Context) {
 	case errors.Is(err, e.ErrInvalidCredentials):
 		appErr = e.Unauthorized(err, "invalid credentials")
 
+	case errors.Is(err, e.ErrUserAlreadyExists):
+		appErr = e.BadRequest(err, "user already exists")
+
 	default:
 		appErr = e.Internal(err)
 	}

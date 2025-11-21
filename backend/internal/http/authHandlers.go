@@ -60,6 +60,21 @@ func (s Server) SignIn(c echo.Context) error {
 }
 
 func (s Server) LogOut(c echo.Context) error {
+	ctx := c.Request().Context()
+	claims, err := utils.GetClaimsFromContext(c, "access")
+	if err != nil {
+	 return err
+	}
+
+	id, err := strconv.Atoi(claims.Subject)
+	if err != nil {
+		return e.Unauthorized(err, "invalid user id")
+	}
+
+	if err := s.service.auth.LogOut(ctx, id); err != nil {
+		return err
+	}
+
 	var accessCookie, refreshCookie http.Cookie
 
 	accessCookie.MaxAge = -1

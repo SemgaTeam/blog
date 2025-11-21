@@ -2,11 +2,12 @@ package http
 
 import (
 	"github.com/SemgaTeam/blog/internal/config"
-	"github.com/SemgaTeam/blog/internal/service"
 	"github.com/SemgaTeam/blog/internal/log"
 	"github.com/SemgaTeam/blog/internal/repository"
+	"github.com/SemgaTeam/blog/internal/service"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
@@ -25,7 +26,7 @@ type Service struct {
 	auth service.AuthService
 }
 
-func NewEchoServer(conf *config.Config, db *gorm.DB) (*Server, error) {
+func NewEchoServer(conf *config.Config, db *gorm.DB, rdb *redis.Client) (*Server, error) {
 	echo := echo.New()
 
 	postRepo := repository.NewPostRepository(db)
@@ -50,7 +51,10 @@ func NewEchoServer(conf *config.Config, db *gorm.DB) (*Server, error) {
 	}
 	log.Log.Debug("initialized token repository")
 
-	authService, err := service.NewAuthService(conf.Auth, tokenRepo, userRepo, hashRepo)
+	redisRepo := repository.NewRedisRepository(rdb)
+	log.Log.Debug("initialized redis repository")
+
+	authService, err := service.NewAuthService(conf.Auth, tokenRepo, userRepo, hashRepo, redisRepo)
 	if err != nil {
 		log.Log.Fatal("auth service initialization error", zap.Error(err))
 		return nil, err
@@ -124,7 +128,7 @@ func (s Server) setupRouter() {
 
 	auth.POST("/signin", s.SignIn)
 	auth.POST("/login", s.LogIn)
-	auth.POST("/logout", s.LogOut)
+	auth.POST("/logout", s.LogOut, accessMiddleware)
 	auth.POST("/refresh", s.RefreshTokens, refreshMiddleware)
 }
 

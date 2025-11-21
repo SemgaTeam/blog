@@ -10,7 +10,7 @@ import (
 
 type RedisRepository interface {
 	GetToken(context.Context, string) (string, error)
-	SetToken(context.Context, string, string, time.Duration) error
+	SetToken(context.Context, string, string, int) error
 	DeleteToken(context.Context, string) (int64, error)
 }
 
@@ -35,7 +35,9 @@ func (r *redisRepository) GetToken(ctx context.Context, key string) (string, err
 	return v, nil
 }
 
-func (r *redisRepository) SetToken(ctx context.Context, key, value string, expiration time.Duration) error {
+func (r *redisRepository) SetToken(ctx context.Context, key, value string, expirationSecs int) error {
+	expiration := time.Duration(expirationSecs) * time.Second
+
 	if err := r.rdb.Set(ctx, key, value, expiration).Err(); err != nil {
 		return e.ErrRedisTokenSetFailed
 	}
