@@ -7,7 +7,6 @@ import (
 	"github.com/SemgaTeam/blog/internal/service"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
@@ -26,7 +25,7 @@ type Service struct {
 	auth service.AuthService
 }
 
-func NewEchoServer(conf *config.Config, db *gorm.DB, rdb *redis.Client) (*Server, error) {
+func NewEchoServer(conf *config.Config, db *gorm.DB) (*Server, error) {
 	echo := echo.New()
 
 	postRepo := repository.NewPostRepository(db)
@@ -51,10 +50,7 @@ func NewEchoServer(conf *config.Config, db *gorm.DB, rdb *redis.Client) (*Server
 	}
 	log.Log.Debug("initialized token repository")
 
-	redisRepo := repository.NewRedisRepository(rdb)
-	log.Log.Debug("initialized redis repository")
-
-	authService, err := service.NewAuthService(conf.Auth, tokenRepo, userRepo, hashRepo, redisRepo)
+	authService, err := service.NewAuthService(conf.Auth, tokenRepo, userRepo, hashRepo)
 	if err != nil {
 		log.Log.Fatal("auth service initialization error", zap.Error(err))
 		return nil, err

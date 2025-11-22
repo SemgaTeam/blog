@@ -9,7 +9,6 @@ import (
 	"go.uber.org/zap"
 
 	"context"
-	"strconv"
 )
 
 type AuthService interface {
@@ -27,7 +26,6 @@ type authService struct {
 type authServiceRepo struct {
 	token repository.TokenRepository
 	user repository.UserRepository
-	redis repository.RedisRepository
 	hash repository.HashRepository
 }
 
@@ -36,14 +34,12 @@ func NewAuthService(
 	tokenRepo repository.TokenRepository, 
 	userRepo repository.UserRepository, 
 	hashRepo repository.HashRepository, 
-	redisRepo repository.RedisRepository,
 ) (AuthService, error) {
 	return &authService{
 		repo: authServiceRepo{
 			token: tokenRepo,
 			user: userRepo,
 			hash: hashRepo,
-			redis: redisRepo,
 		},
 		conf: conf,
 	}, nil
@@ -65,9 +61,6 @@ func (s *authService) LogIn(ctx context.Context, name, password string) (*entiti
 	if err != nil {
 		return nil, nil, err
 	}
-
-	idStr := strconv.Itoa(user.ID)
-	s.repo.redis.SetToken(ctx, idStr, refreshToken.Value, s.conf.SessionExpirationSecs)	
 
 	log.Debug("user logged in", zap.Int("user_id", user.ID))
 
@@ -93,9 +86,6 @@ func (s *authService) SignIn(ctx context.Context, name, password string) (*entit
 		return nil, nil, err
 	}
 
-	idStr := strconv.Itoa(user.ID)
-	s.repo.redis.SetToken(ctx, idStr, refreshToken.Value, s.conf.SessionExpirationSecs)
-
 	log.Debug("user signed in", zap.Int("user_id", user.ID))
 
 	return authToken, refreshToken, nil
@@ -113,11 +103,9 @@ func (s *authService) RefreshTokens(ctx context.Context, userId int) (*entities.
 func (s *authService) LogOut(ctx context.Context, userId int) error {
 	log := utils.GetLoggerFromContext(ctx)
 
-	n, err := s.repo.redis.DeleteToken(ctx, strconv.Itoa(userId))
+	log.Debug("user logged out", zap.Int("user_id", userId))
 
-	log.Debug("user logged out", zap.Int("user_id", userId), zap.Int64("n", n))
-
-	return err
+	return nil
 }
 
 func (s *authService) generateTokens(userId int, accessExpirationSecs, refreshExpirationSecs int) (*entities.AuthToken, *entities.AuthToken, error) {

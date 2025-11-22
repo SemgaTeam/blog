@@ -5,11 +5,7 @@ import (
 	"github.com/SemgaTeam/blog/internal/db"
 	"github.com/SemgaTeam/blog/internal/http"
 	"github.com/SemgaTeam/blog/internal/log"
-	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
-
-	"fmt"
-	"context"
 )
 
 func main() {
@@ -31,20 +27,7 @@ func main() {
 	}
 	log.Log.Info("initialized PostgresQL connection")
 
-	rdb := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%s", conf.Redis.Host, conf.Redis.Port),
-		Password: conf.Redis.Password,
-		DB: 0,
-	})
-
-	defer rdb.FlushDB(context.Background())
-
-	if err := rdb.Ping(context.Background()).Err(); err != nil {
-		log.Log.Fatal("failed to connect to redis", zap.Error(err), zap.String("password", conf.Redis.Password))
-		panic(err)
-	}
-
-	s, err := http.NewEchoServer(conf, db, rdb)
+	s, err := http.NewEchoServer(conf, db)
 	if err != nil {
 		log.Log.Fatal("failed to initialize echo server", zap.Error(err))
 		panic(err)
