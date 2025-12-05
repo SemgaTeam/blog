@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"github.com/SemgaTeam/blog/internal/dto"
+	"github.com/SemgaTeam/blog/internal/utils"
 	"github.com/SemgaTeam/blog/internal/entities"
 	e "github.com/SemgaTeam/blog/internal/error"
 	"gorm.io/gorm"
@@ -13,6 +15,7 @@ type UserRepository interface {
 	CreateUser(string, string) (*entities.User, error)
 	GetUserById(int) (*entities.User, error)
 	GetUserByName(string) (*entities.User, error)
+	GetUsers(dto.GetUserParams) ([]entities.User, int64, error)
 	UpdateUser(int, string, string) (*entities.User, error)
 	DeleteUser(int) (int, error)
 }
@@ -70,6 +73,44 @@ func (r *userRepository) GetUserByName(name string) (*entities.User, error) {
 	}
 
 	return &user, nil
+}
+
+func (r *userRepository) GetUsers(params dto.GetUserParams) ([]entities.User, int64, error) {
+	var users []entities.User
+	var total int64
+
+	q := r.db.Model(&entities.User{})
+
+	if params.IDs != nil {
+		q = q.Where("id IN ?", params.IDs)
+	}
+
+	if params.Name != "" {
+		q = q.Where("name LIKE ?", "%"+params.Name+"%")
+	}
+
+	allowedSortingFields := []string{"name", "created_at"}
+	if err := utils.HandleSorting(q, params.Sorting, allowedSortingFields); err != nil {
+		return nil, 0, err
+	}
+
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, e.Internal(err)
+	}
+
+	utils.HandlePagination(q, params.Pagination)
+
+	res := q.Find(&users)
+
+	if err := res.Error; err != nil {
+		return nil, 0, e.Internal(err)
+	}
+
+	if total == 0 {
+		return nil, 0, e.ErrUserNotFound
+	}
+
+	return users, total, nil
 }
 
 func (r *userRepository) UpdateUser(id int, name, password string) (*entities.User, error) {

@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/SemgaTeam/blog/internal/entities"
+	"github.com/SemgaTeam/blog/internal/dto"
 	"github.com/SemgaTeam/blog/internal/repository"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"go.uber.org/zap"
@@ -12,6 +13,7 @@ import (
 type UserService interface {
 	CreateUser(context.Context, string, string) (*entities.User, error)
 	GetUserById(context.Context, int) (*entities.User, error)
+	GetUsers(context.Context, dto.GetUserParams) ([]entities.User, int64, error)
 	UpdateUser(context.Context, int, string, string) (*entities.User, error)
 	DeleteUser(context.Context, int) (int, error)
 }
@@ -56,6 +58,19 @@ func (s *userService) GetUserById(ctx context.Context, id int) (*entities.User, 
 	
 	log.Debug("got user", zap.Int("id", user.ID))
 	return user, nil
+}
+
+func (s *userService) GetUsers(ctx context.Context, params dto.GetUserParams) ([]entities.User, int64, error) {
+	log := utils.GetLoggerFromContext(ctx)
+
+	users, total, err := s.repo.user.GetUsers(params)
+	if err != nil {
+		log.Info("get posts error", zap.Error(err))
+		return nil, 0, err
+	}
+
+	log.Debug("got users", zap.Int64("total", total))
+	return users, total, nil
 }
 
 func (s *userService) UpdateUser(ctx context.Context, id int, name, password string) (*entities.User, error) {
