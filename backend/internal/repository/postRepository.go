@@ -1,15 +1,14 @@
 package repository
 
 import (
-	"github.com/SemgaTeam/blog/internal/entities"
-	"github.com/SemgaTeam/blog/internal/utils"
 	"github.com/SemgaTeam/blog/internal/dto"
+	"github.com/SemgaTeam/blog/internal/entities"
 	e "github.com/SemgaTeam/blog/internal/error"
+	"github.com/SemgaTeam/blog/internal/utils"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
 	"errors"
-	"strings"
 )
 
 type PostRepository interface {
@@ -65,8 +64,6 @@ func (r *postRepository) GetPost(id int) (*entities.Post, error) {
 func (r *postRepository) GetPosts(params dto.GetPostParams) ([]entities.Post, int64, error) {
 	var posts []entities.Post
 	var total int64
-	params.SortField = strings.TrimSpace(strings.ToLower(params.SortField))
-	params.SortOrder = strings.TrimSpace(strings.ToLower(params.SortOrder))
 
 	q := r.db.Model(&entities.Post{})	
 
@@ -83,7 +80,7 @@ func (r *postRepository) GetPosts(params dto.GetPostParams) ([]entities.Post, in
 	}
 
 	allowedSortingFields := []string{"created_at", "updated_at"}
-	if err := utils.HandleSorting(q, params.SortField, params.SortOrder, allowedSortingFields); err != nil {
+	if err := utils.HandleSorting(q, params.Sorting, allowedSortingFields); err != nil {
 		return nil, 0, err
 	}
 
@@ -91,9 +88,7 @@ func (r *postRepository) GetPosts(params dto.GetPostParams) ([]entities.Post, in
 		return nil, 0, e.Internal(err)
 	}
 
-	if params.Page != 0 && params.PerPage != 0 {
-		q = q.Limit(params.PerPage).Offset((params.Page - 1)*params.PerPage)
-	}
+	utils.HandlePagination(q, params.Pagination)
 
 	res := q.Find(&posts)
 

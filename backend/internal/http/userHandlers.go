@@ -47,6 +47,30 @@ func (s Server) GetUserById(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+func (s Server) GetUsers(c echo.Context) error {
+	ctx := c.Request().Context()
+	var response dto.GetUsersResponse
+
+	var params dto.GetUserParams
+
+	if err := c.Bind(&params); err != nil {
+		return e.ErrInvalidQueryParam
+	}
+	
+	users, total, err := s.service.user.GetUsers(ctx, params)
+	if err != nil {
+		return err
+	}
+
+	for _, user := range users {
+		response.Data = append(response.Data, user.ToDTO())
+	}
+
+	response.Total = total
+
+	return c.JSON(http.StatusOK, response)
+}
+
 func (s Server) UpdateUser(c echo.Context) error {
 	ctx := c.Request().Context()
 	var response dto.UpdateUserResponse

@@ -117,6 +117,7 @@ func (s Server) setupRouter() {
 	postsAuth.DELETE("/:id", s.DeletePost)
 
 	users.GET("/:id", s.GetUserById)
+	users.GET("", s.GetUsers)
 	users.POST("", s.CreateUser)
 
 	usersAuth.PUT("/:id", s.UpdateUser)

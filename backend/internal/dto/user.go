@@ -15,6 +15,18 @@ type CreateUserResponse = User
 
 type GetUserResponse = User
 
+type GetUserParams struct {
+	IDs []int `query:"ids"`
+	Pagination Pagination `query:"pagination"`
+	Sorting Sorting `query:"sorting"`
+	Name string `query:"name"`
+}
+
+type GetUsersResponse struct {
+	Data []User `json:"data"`
+	Total int64 `json:"total"`
+}
+
 type UpdateUserRequest struct {
 	Name string `json:"name"`
 	Password string `json:"password"`
