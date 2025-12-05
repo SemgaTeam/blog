@@ -2,6 +2,7 @@ package utils
 
 import (
 	"github.com/SemgaTeam/blog/internal/entities"
+	"github.com/SemgaTeam/blog/internal/dto"
 	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
@@ -11,7 +12,6 @@ import (
 	"context"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 	"errors"
 )
@@ -53,21 +53,14 @@ func SetAuthCookie(name, value string, expires time.Time) *http.Cookie {
 	return &c
 }
 
-func HandleSorting(q *gorm.DB, sortField, sortOrder string, allowedFields []string) error { // handle sorting requests
-	sortField = strings.TrimSpace(strings.ToLower(sortField))
-	sortOrder = strings.TrimSpace(strings.ToLower(sortOrder))
-
-	if sortField == "" { 
+func HandleSorting(q *gorm.DB, s dto.Sorting, allowedFields []string) error { // handle sorting requests
+	if s.SortField == "" { 
 		return nil
-	}
-
-	if sortOrder == "" {
-		sortOrder = "asc" // default value
 	}
 
 	allowed := false
 	for _, allowedField := range allowedFields {
-		if sortField == allowedField {
+		if s.SortField == allowedField {
 			allowed = true
 		}
 	}
@@ -76,13 +69,19 @@ func HandleSorting(q *gorm.DB, sortField, sortOrder string, allowedFields []stri
 		return e.BadRequest(nil, "sort field is not allowed")
 	}
 
-	if sortOrder != "asc" && sortOrder != "desc" {
-		return e.BadRequest(nil, "sort order is invalid")
-	}
-
-	q = q.Order(sortField + " " + sortOrder)
+	q = q.Order(s.SortField + " " + s.SortOrder)
 
 	return nil
+}
+
+func HandlePagination(q *gorm.DB, p dto.Pagination) {
+	if p.Page != 0 && p.PerPage != 0 {
+		q = q.
+			Limit(p.PerPage).
+			Offset(
+				(p.Page - 1)*p.PerPage,
+			)
+	}
 }
 
 func GetClaimsFromContext(c echo.Context, tokenType string) (*entities.Claims, error) {

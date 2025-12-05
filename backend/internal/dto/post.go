@@ -32,10 +32,8 @@ type DeletePostResponse struct {
 
 type GetPostParams struct {
 	IDs []int `query:"ids"`
-	Page int `query:"page"`
-	PerPage int `query:"perPage"`
-	SortField string `query:"sortField"`
-	SortOrder string `query:"sortOrder"`
+	Pagination Pagination `query:"pagination"`
+	Sorting Sorting `query:"sorting"`
 	Name string `query:"name"`
 	AuthorID int `query:"authorId"`
 }
