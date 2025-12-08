@@ -337,3 +337,63 @@ func TestUpdatePostValidation(t *testing.T) {
 		}) 
 	}
 }
+
+func TestDeletePostValidation(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockPostRepo := mock.NewMockPostRepository(ctrl)
+	postService := NewPostService(mockPostRepo)	
+
+	tests := []struct{
+		name string
+		id int
+		wantError bool
+		setupMock func()
+	}{
+		{ 
+			name: "valid input", 
+			id: 1,
+			wantError: false,
+			setupMock: func() {
+				mockPostRepo.
+					EXPECT().
+					DeletePost(gomock.Any()).
+					Return(1, nil)
+			},
+		},
+		{
+			name: "invalid id",
+			id: -1,
+			wantError: true,
+			setupMock: func() {
+				mockPostRepo.
+					EXPECT().
+					DeletePost(gomock.Any()).
+					Return(0, errors.New("invalid id"))	
+			},
+		},
+		{ 
+			name: "repository error", 
+			id: 1, 
+			wantError: true,
+			setupMock: func() {
+				mockPostRepo.
+					EXPECT().
+					DeletePost(gomock.Any()).
+					Return(0, errors.New("repository error"))
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setupMock()
+			_, err := postService.DeletePost(context.Background(), tt.id)
+
+			if (err != nil) != tt.wantError {
+				t.Errorf("DeletePost() error = %v, wantError %v", err, tt.wantError)
+			}
+		}) 
+	}
+}
