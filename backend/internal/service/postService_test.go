@@ -230,6 +230,7 @@ func TestGetPostsValidation(t *testing.T) {
 			params: dto.GetPostParams{
 				IDs: []int{1, 2, 3},
 			},
+			total: 0,
 			wantError: true,
 			setupMock: func() {
 				mockPostRepo.
@@ -251,6 +252,87 @@ func TestGetPostsValidation(t *testing.T) {
 
 			if (err != nil) != tt.wantError {
 				t.Errorf("GetPosts() error = %v, wantError %v", err, tt.wantError)
+			}
+		}) 
+	}
+}
+
+func TestUpdatePostValidation(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockPostRepo := mock.NewMockPostRepository(ctrl)
+	postService := NewPostService(mockPostRepo)	
+
+	tests := []struct{
+		name string
+		id int
+		title string 
+		content string
+		wantError bool
+		setupMock func()
+	}{
+		{ 
+			name: "valid input", 
+			id: 1,
+			title: "title", 
+			content: "content", 
+			wantError: false,
+			setupMock: func() {
+				mockPostRepo.
+					EXPECT().
+					UpdatePost(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(&entities.Post{}, nil)
+			},
+		},
+		{ 
+			name: "empty title", 
+			id: 1,
+			title: "", 
+			content: "content", 
+			wantError: true,
+			setupMock: func() {
+				mockPostRepo.
+					EXPECT().
+					UpdatePost(gomock.Any(), gomock.Eq(""), gomock.Any()).
+					Return(nil, errors.New("empty title"))
+			},
+		},
+		{
+			name: "invalid id",
+			id: -1,
+			title: "title",
+			content: "content",
+			wantError: true,
+			setupMock: func() {
+				mockPostRepo.
+					EXPECT().
+					UpdatePost(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil, errors.New("invalid id"))	
+			},
+		},
+		{ 
+			name: "repository error", 
+			id: 1, 
+			title: "title", 
+			content: "content", 
+			wantError: true,
+			setupMock: func() {
+				mockPostRepo.
+					EXPECT().
+					UpdatePost(gomock.Not(""), gomock.Any(), gomock.Any()).
+					Return(nil, errors.New("repository error"))
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setupMock()
+			_, err := postService.UpdatePost(context.Background(), tt.id, tt.title, tt.content)
+
+			if (err != nil) != tt.wantError {
+				t.Errorf("UpdatePost() error = %v, wantError %v", err, tt.wantError)
 			}
 		}) 
 	}
