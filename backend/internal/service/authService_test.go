@@ -266,3 +266,61 @@ func TestSignIn(t *testing.T) {
 		}) 
 	}
 }
+
+func TestRefreshTokens(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTokenRepo := mock.NewMockTokenRepository(ctrl)
+	mockUserRepo := mock.NewMockUserRepository(ctrl)
+	mockHashRepo := mock.NewMockHashRepository(ctrl)
+
+	conf := config.GetConfig()
+
+	authService, err := NewAuthService(conf.Auth, mockTokenRepo, mockUserRepo, mockHashRepo)
+	if err != nil {
+		t.Errorf("error initialization auth service: conf = %v", conf)
+	}
+
+	tests := []struct{
+		testName string
+		id int
+		wantError bool
+		setupMock func()
+	}{
+		{ 
+			testName: "success case", 
+			id: 1,
+			wantError: false,
+			setupMock: func() {
+				mockTokenRepo.
+					EXPECT().
+					GenerateAndSignToken(gomock.Any()).
+					Return(&entities.AuthToken{}, nil).
+					Times(2)
+			},
+		},
+		{ 
+			testName: "token repository error", 
+			id: 1,
+			wantError: true,
+			setupMock: func() {
+				mockTokenRepo.
+					EXPECT().
+					GenerateAndSignToken(gomock.Any()).
+					Return(nil, errors.New("repository error"))
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+			tt.setupMock()
+			_, _, err := authService.RefreshTokens(context.Background(), tt.id)
+
+			if (err != nil) != tt.wantError {
+				t.Errorf("RefreshTokens() error = %v, wantError %v", err, tt.wantError)
+			}
+		}) 
+	}
+}
