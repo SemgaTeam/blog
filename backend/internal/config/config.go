@@ -72,7 +72,9 @@ func GetConfig() *Config {
 		viper.SetDefault("hash.cost", 10)
 
 		if err := viper.ReadInConfig(); err != nil {
-			panic(err)
+			if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+				panic(err)
+			}
 		}
 
 		if err := viper.Unmarshal(&configInstance); err != nil {
