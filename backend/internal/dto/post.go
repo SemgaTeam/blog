@@ -12,7 +12,6 @@ type Post struct {
 type CreatePostRequest struct {
 	Name string `json:"name"`	
 	Contents string `json:"contents"`
-	AuthorID int `json:"author_id"`
 }
 
 type CreatePostResponse = Post
