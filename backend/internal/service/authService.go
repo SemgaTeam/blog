@@ -40,17 +40,22 @@ func NewAuthService(conf *config.Auth, tokenRepo repository.TokenRepository, use
 }
 
 func (s *authService) LogIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error) {
+	log := utils.GetLoggerFromContext(ctx)
+
 	user, err := s.repo.user.GetUserByName(name)	
 	if err != nil {
+		log.Info("user not found by name", zap.Error(err))
 		return nil, nil, err
 	}
 
 	if !s.repo.hash.IsPasswordValid(password, user.Password) {
+		log.Info("invalid password", zap.Int("user_id", user.ID))
 		return nil, nil, e.ErrInvalidCredentials
 	}
 
 	authToken, refreshToken, err := s.generateTokens(user.ID, s.conf.AccessExpirationSecs, s.conf.RefreshExpirationSecs)
 	if err != nil {
+		log.Info("error generating tokens", zap.Error(err))
 		return nil, nil, err
 	}
 
@@ -80,8 +85,11 @@ func (s *authService) SignIn(ctx context.Context, name, password string) (*entit
 }
 
 func (s *authService) RefreshTokens(ctx context.Context, userId int) (*entities.AuthToken, *entities.AuthToken, error) {
+	log := utils.GetLoggerFromContext(ctx)
+
 	authToken, refreshToken, err := s.generateTokens(userId, s.conf.AccessExpirationSecs, s.conf.RefreshExpirationSecs)
 	if err != nil {
+		log.Info("Error generating tokens", zap.Error(err))
 		return nil, nil, err
 	}
 
