@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/SemgaTeam/blog/internal/dto"
 	e "github.com/SemgaTeam/blog/internal/error"
+	"github.com/SemgaTeam/blog/internal/utils"
 	"github.com/labstack/echo/v4"
 
 	"net/http"
@@ -13,12 +14,22 @@ func (s Server) CreatePost(c echo.Context) error {
 	ctx := c.Request().Context()
 	var request dto.CreatePostRequest
 
+	claims, err := utils.GetClaimsFromContext(c, "access")
+	if err != nil {
+		return err
+	}
+
+	id, err := strconv.Atoi(claims.Subject)
+	if err != nil {
+		return e.Unauthorized(err, "invalid user id")
+	}
+
 	var response dto.CreatePostResponse
 	if err := c.Bind(&request); err != nil {
 		return e.BadRequest(err, "invalid request")
 	}
 
-	post, err := s.service.post.CreatePost(ctx, request.Name, request.Contents, request.AuthorID)
+	post, err := s.service.post.CreatePost(ctx, request.Name, request.Contents, id)
 	if err != nil {
 		return err
 	}
