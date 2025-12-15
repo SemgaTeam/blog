@@ -88,7 +88,7 @@ func GetClaimsFromContext(c echo.Context, tokenType string) (*entities.Claims, e
 	token := c.Get(tokenType).(*jwt.Token)
 	claims, ok := token.Claims.(*entities.Claims) 
 	if ok != true {
-		return nil, e.Internal(errors.New("no claims"))
+		return nil, e.Unauthorized(errors.New("no claims"), "token is invalid")
 	}
 
 	return claims, nil

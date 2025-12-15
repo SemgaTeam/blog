@@ -89,3 +89,27 @@ func (s Server) RefreshTokens(c echo.Context) error {
 
 	return c.NoContent(http.StatusNoContent)
 }
+
+func (s Server) GetMe(c echo.Context) error {
+	ctx := c.Request().Context()
+	var response dto.GetMeResponse
+
+	claims, err := utils.GetClaimsFromContext(c, "access")
+	if err != nil {
+		return err
+	}
+
+	id, err := strconv.Atoi(claims.Subject)
+	if err != nil {
+		return e.Unauthorized(err, "invalid user id")
+	}
+
+	user, err := s.service.auth.GetMe(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	response = user.ToDTO()
+
+	return c.JSON(http.StatusOK, response)
+}
