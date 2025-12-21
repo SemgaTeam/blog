@@ -285,12 +285,27 @@ func TestRefreshTokens(t *testing.T) {
 	tests := []struct{
 		testName string
 		id int
+		isAdmin bool
 		wantError bool
 		setupMock func()
 	}{
 		{ 
-			testName: "success case", 
+			testName: "success case (not admin)", 
 			id: 1,
+			isAdmin: false,
+			wantError: false,
+			setupMock: func() {
+				mockTokenRepo.
+					EXPECT().
+					GenerateAndSignToken(gomock.Any()).
+					Return(&entities.AuthToken{}, nil).
+					Times(2)
+			},
+		},
+		{ 
+			testName: "success case (admin)", 
+			id: 1,
+			isAdmin: true,
 			wantError: false,
 			setupMock: func() {
 				mockTokenRepo.
@@ -316,7 +331,7 @@ func TestRefreshTokens(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			tt.setupMock()
-			_, _, err := authService.RefreshTokens(context.Background(), tt.id)
+			_, _, err := authService.RefreshTokens(context.Background(), tt.id, tt.isAdmin)
 
 			if (err != nil) != tt.wantError {
 				t.Errorf("RefreshTokens() error = %v, wantError %v", err, tt.wantError)
