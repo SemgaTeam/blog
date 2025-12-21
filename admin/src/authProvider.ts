@@ -21,7 +21,6 @@ const authProvider: AuthProvider = {
       throw new Error(response.statusText);
     }
     return Promise.resolve();
-    // TODO: add admin checking
     // server set cookies and login is successfull
   },
 
@@ -31,7 +30,8 @@ const authProvider: AuthProvider = {
       credentials: "include",
     });
 
-    if (res.ok) return Promise.resolve();
+    const data = await res.json();
+    if (res.ok && data.is_admin) return Promise.resolve();
     return Promise.reject();
   },
 
