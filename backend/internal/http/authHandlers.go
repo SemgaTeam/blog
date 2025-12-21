@@ -23,8 +23,8 @@ func (s Server) LogIn(c echo.Context) error {
 		return err
 	}
 
-	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, accessToken.Claims.ExpiresAt.Time)
-	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, refreshToken.Claims.ExpiresAt.Time)
+	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, "/", accessToken.Claims.ExpiresAt.Time)
+	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, "/", refreshToken.Claims.ExpiresAt.Time)
 
 	c.SetCookie(accessCookie)
 	c.SetCookie(refreshCookie)
@@ -45,8 +45,8 @@ func (s Server) SignIn(c echo.Context) error {
 		return err
 	}
 
-	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, accessToken.Claims.ExpiresAt.Time)
-	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, refreshToken.Claims.ExpiresAt.Time)
+	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, "/", accessToken.Claims.ExpiresAt.Time)
+	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, "/", refreshToken.Claims.ExpiresAt.Time)
 
 	c.SetCookie(accessCookie)
 	c.SetCookie(refreshCookie)
@@ -57,7 +57,10 @@ func (s Server) SignIn(c echo.Context) error {
 func (s Server) LogOut(c echo.Context) error {
 	var accessCookie, refreshCookie http.Cookie
 
+	accessCookie.Name = "accessToken"
 	accessCookie.MaxAge = -1
+
+	refreshCookie.Name = "refreshToken"
 	refreshCookie.MaxAge = -1
 
 	c.SetCookie(&accessCookie)
@@ -81,8 +84,8 @@ func (s Server) RefreshTokens(c echo.Context) error {
 
 	accessToken, refreshToken, err := s.service.auth.RefreshTokens(ctx, id)
 
-	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, accessToken.Claims.ExpiresAt.Time)
-	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, refreshToken.Claims.ExpiresAt.Time)
+	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, "/", accessToken.Claims.ExpiresAt.Time)
+	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, "/", refreshToken.Claims.ExpiresAt.Time)
 
 	c.SetCookie(accessCookie)
 	c.SetCookie(refreshCookie)

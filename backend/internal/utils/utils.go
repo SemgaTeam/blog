@@ -41,14 +41,16 @@ func GetClaims(userId int, expirationSecs int) entities.Claims { // get jwt clai
 	}	
 }
 
-func SetAuthCookie(name, value string, expires time.Time) *http.Cookie { 
+func SetAuthCookie(name, value, path string, expires time.Time) *http.Cookie { 
 	var c http.Cookie
 
 	c.Name = name
 	c.Value = value
 	c.Expires = expires
 	c.HttpOnly = true
+	c.SameSite = http.SameSiteStrictMode
 	c.Secure = true
+	c.Path = path
 
 	return &c
 }

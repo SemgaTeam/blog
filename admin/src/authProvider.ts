@@ -8,6 +8,7 @@ const authProvider: AuthProvider = {
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify({
         name: username,
         password: password,
@@ -19,12 +20,19 @@ const authProvider: AuthProvider = {
     if (response.status < 200 || response.status >= 300) {
       throw new Error(response.statusText);
     }
+    return Promise.resolve();
     // TODO: add admin checking
     // server set cookies and login is successfull
   },
 
   checkAuth: async () => {
-    return Promise.resolve(); // TODO: add /me endpoint
+    const res = await fetch(`${config.apiUrl}/auth/me`, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (res.ok) return Promise.resolve();
+    return Promise.reject();
   },
 
   checkError: async (error) => {
@@ -35,7 +43,7 @@ const authProvider: AuthProvider = {
   },
 
   logout: async () => {
-    await fetch(`${config.apiUrl}/logout`, {
+    await fetch(`${config.apiUrl}/auth/logout`, {
       method: "POST",
       credentials: "include",
     });
@@ -45,7 +53,18 @@ const authProvider: AuthProvider = {
   },
 
   getIdentity: async () => {
-    return { id: 1, name: "John Doe" }; // same TODO as above
+    const res = await fetch(`${config.apiUrl}/auth/me`, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (!res.ok) return Promise.reject();
+
+    const credentials = await res.json();
+
+    const { id, name } = credentials;
+
+    return { id, name };
   },
 };
 
