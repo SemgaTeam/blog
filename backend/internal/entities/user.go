@@ -10,6 +10,7 @@ type User struct {
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	Name string `gorm:"not null;unique"`
 	Password string `gorm:"not null"`
+	IsAdmin bool `gorm:"default:false"`
 }
 
 func (u *User) ToDTO() dto.User {
