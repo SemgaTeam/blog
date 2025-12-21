@@ -93,6 +93,7 @@ const dataProvider: DataProvider = {
     const response = await fetch(request, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify(params.data),
     });
 
