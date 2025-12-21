@@ -12,9 +12,10 @@ import (
 )
 
 type AuthService interface {
-	LogIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error)
-	SignIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error)
-	RefreshTokens(context.Context, int) (*entities.AuthToken, *entities.AuthToken, error)
+	LogIn(context.Context, string, string) (*entities.AuthToken, *entities.AuthToken, error)
+	SignIn(context.Context, string, string) (*entities.AuthToken, *entities.AuthToken, error)
+	RefreshTokens(context.Context, int, bool) (*entities.AuthToken, *entities.AuthToken, error)
+	GetMe(context.Context, int) (*entities.User, error)
 }
 
 type authService struct {
@@ -53,7 +54,7 @@ func (s *authService) LogIn(ctx context.Context, name, password string) (*entiti
 		return nil, nil, e.ErrInvalidCredentials
 	}
 
-	authToken, refreshToken, err := s.generateTokens(user.ID, s.conf.AccessExpirationSecs, s.conf.RefreshExpirationSecs)
+	authToken, refreshToken, err := s.generateTokens(user.ID, user.IsAdmin, s.conf.AccessExpirationSecs, s.conf.RefreshExpirationSecs)
 	if err != nil {
 		log.Info("error generating tokens", zap.Error(err))
 		return nil, nil, err
@@ -76,7 +77,7 @@ func (s *authService) SignIn(ctx context.Context, name, password string) (*entit
 		return nil, nil, err
 	}
 
-	authToken, refreshToken, err := s.generateTokens(user.ID, s.conf.AccessExpirationSecs, s.conf.RefreshExpirationSecs)
+	authToken, refreshToken, err := s.generateTokens(user.ID, user.IsAdmin, s.conf.AccessExpirationSecs, s.conf.RefreshExpirationSecs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -84,10 +85,10 @@ func (s *authService) SignIn(ctx context.Context, name, password string) (*entit
 	return authToken, refreshToken, nil
 }
 
-func (s *authService) RefreshTokens(ctx context.Context, userId int) (*entities.AuthToken, *entities.AuthToken, error) {
+func (s *authService) RefreshTokens(ctx context.Context, userId int, isAdmin bool) (*entities.AuthToken, *entities.AuthToken, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	authToken, refreshToken, err := s.generateTokens(userId, s.conf.AccessExpirationSecs, s.conf.RefreshExpirationSecs)
+	authToken, refreshToken, err := s.generateTokens(userId, isAdmin, s.conf.AccessExpirationSecs, s.conf.RefreshExpirationSecs)
 	if err != nil {
 		log.Info("Error generating tokens", zap.Error(err))
 		return nil, nil, err
@@ -96,9 +97,22 @@ func (s *authService) RefreshTokens(ctx context.Context, userId int) (*entities.
 	return authToken, refreshToken, nil
 }
 
-func (s *authService) generateTokens(userId int, accessExpirationSecs, refreshExpirationSecs int) (*entities.AuthToken, *entities.AuthToken, error) {
-	authClaims := utils.GetClaims(userId, accessExpirationSecs)
-	refreshClaims := utils.GetClaims(userId, refreshExpirationSecs)
+func (s *authService) GetMe(ctx context.Context, userId int) (*entities.User, error) {
+	log := utils.GetLoggerFromContext(ctx)
+
+	user, err := s.repo.user.GetUserById(userId)
+	if err != nil {
+		log.Info("failed getting user", zap.Error(err), zap.Int("id", userId))
+		return nil, err
+	}
+	log.Debug("got user info", zap.Int("id", userId))
+
+	return user, nil
+}
+
+func (s *authService) generateTokens(userId int, isAdmin bool, accessExpirationSecs, refreshExpirationSecs int) (*entities.AuthToken, *entities.AuthToken, error) {
+	authClaims := utils.GetClaims(userId, isAdmin, accessExpirationSecs)
+	refreshClaims := utils.GetClaims(userId, isAdmin, refreshExpirationSecs)
 
 	authToken, err := s.repo.token.GenerateAndSignToken(authClaims)
 	if err != nil {

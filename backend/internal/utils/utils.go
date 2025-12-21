@@ -26,7 +26,7 @@ func GetLoggerFromContext(ctx context.Context) *zap.Logger { // get logger from 
 	return zap.L()
 }
 
-func GetClaims(userId int, expirationSecs int) entities.Claims { // get jwt claims for app use
+func GetClaims(userId int, isAdmin bool, expirationSecs int) entities.Claims { // get jwt claims for app use
 	date := jwt.NewNumericDate(
 		time.Now().Add(
 			time.Duration(expirationSecs)*time.Second,
@@ -34,6 +34,7 @@ func GetClaims(userId int, expirationSecs int) entities.Claims { // get jwt clai
 	)
 
 	return entities.Claims{
+		IsAdmin: isAdmin,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject: strconv.Itoa(userId),
 			ExpiresAt: date,
@@ -41,14 +42,16 @@ func GetClaims(userId int, expirationSecs int) entities.Claims { // get jwt clai
 	}	
 }
 
-func SetAuthCookie(name, value string, expires time.Time) *http.Cookie { 
+func SetAuthCookie(name, value, path string, expires time.Time) *http.Cookie { 
 	var c http.Cookie
 
 	c.Name = name
 	c.Value = value
 	c.Expires = expires
 	c.HttpOnly = true
+	c.SameSite = http.SameSiteStrictMode
 	c.Secure = true
+	c.Path = path
 
 	return &c
 }
@@ -88,7 +91,7 @@ func GetClaimsFromContext(c echo.Context, tokenType string) (*entities.Claims, e
 	token := c.Get(tokenType).(*jwt.Token)
 	claims, ok := token.Claims.(*entities.Claims) 
 	if ok != true {
-		return nil, e.Internal(errors.New("no claims"))
+		return nil, e.Unauthorized(errors.New("no claims"), "token is invalid")
 	}
 
 	return claims, nil

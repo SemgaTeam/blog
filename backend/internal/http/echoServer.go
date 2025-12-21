@@ -127,6 +127,7 @@ func (s Server) setupRouter() {
 	auth.POST("/login", s.LogIn)
 	auth.POST("/logout", s.LogOut)
 	auth.POST("/refresh", s.RefreshTokens, refreshMiddleware)
+	auth.POST("/me", s.GetMe, accessMiddleware)
 }
 
 func (s Server) Start() {

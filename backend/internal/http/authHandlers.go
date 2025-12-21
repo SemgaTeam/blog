@@ -23,8 +23,8 @@ func (s Server) LogIn(c echo.Context) error {
 		return err
 	}
 
-	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, accessToken.Claims.ExpiresAt.Time)
-	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, refreshToken.Claims.ExpiresAt.Time)
+	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, "/", accessToken.Claims.ExpiresAt.Time)
+	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, "/", refreshToken.Claims.ExpiresAt.Time)
 
 	c.SetCookie(accessCookie)
 	c.SetCookie(refreshCookie)
@@ -45,8 +45,8 @@ func (s Server) SignIn(c echo.Context) error {
 		return err
 	}
 
-	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, accessToken.Claims.ExpiresAt.Time)
-	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, refreshToken.Claims.ExpiresAt.Time)
+	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, "/", accessToken.Claims.ExpiresAt.Time)
+	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, "/", refreshToken.Claims.ExpiresAt.Time)
 
 	c.SetCookie(accessCookie)
 	c.SetCookie(refreshCookie)
@@ -57,7 +57,10 @@ func (s Server) SignIn(c echo.Context) error {
 func (s Server) LogOut(c echo.Context) error {
 	var accessCookie, refreshCookie http.Cookie
 
+	accessCookie.Name = "accessToken"
 	accessCookie.MaxAge = -1
+
+	refreshCookie.Name = "refreshToken"
 	refreshCookie.MaxAge = -1
 
 	c.SetCookie(&accessCookie)
@@ -79,13 +82,39 @@ func (s Server) RefreshTokens(c echo.Context) error {
 		return e.Unauthorized(err, "invalid user id")
 	}
 
-	accessToken, refreshToken, err := s.service.auth.RefreshTokens(ctx, id)
+	isAdmin := claims.IsAdmin
 
-	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, accessToken.Claims.ExpiresAt.Time)
-	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, refreshToken.Claims.ExpiresAt.Time)
+	accessToken, refreshToken, err := s.service.auth.RefreshTokens(ctx, id, isAdmin)
+
+	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, "/", accessToken.Claims.ExpiresAt.Time)
+	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, "/", refreshToken.Claims.ExpiresAt.Time)
 
 	c.SetCookie(accessCookie)
 	c.SetCookie(refreshCookie)
 
 	return c.NoContent(http.StatusNoContent)
+}
+
+func (s Server) GetMe(c echo.Context) error {
+	ctx := c.Request().Context()
+	var response dto.GetMeResponse
+
+	claims, err := utils.GetClaimsFromContext(c, "access")
+	if err != nil {
+		return err
+	}
+
+	id, err := strconv.Atoi(claims.Subject)
+	if err != nil {
+		return e.Unauthorized(err, "invalid user id")
+	}
+
+	user, err := s.service.auth.GetMe(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	response = user.ToDTO()
+
+	return c.JSON(http.StatusOK, response)
 }

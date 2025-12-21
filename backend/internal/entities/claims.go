@@ -5,5 +5,6 @@ import (
 )
 
 type Claims struct {
+	IsAdmin bool
 	jwt.RegisteredClaims
 }
