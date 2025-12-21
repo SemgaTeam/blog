@@ -18,5 +18,6 @@ func (u *User) ToDTO() dto.User {
 		ID: u.ID,
 		CreatedAt: u.CreatedAt.Format(time.RFC3339),
 		Name: u.Name,
+		IsAdmin: u.IsAdmin,
 	}
 }

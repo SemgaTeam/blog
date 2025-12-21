@@ -26,7 +26,7 @@ func GetLoggerFromContext(ctx context.Context) *zap.Logger { // get logger from 
 	return zap.L()
 }
 
-func GetClaims(userId int, expirationSecs int) entities.Claims { // get jwt claims for app use
+func GetClaims(userId int, isAdmin bool, expirationSecs int) entities.Claims { // get jwt claims for app use
 	date := jwt.NewNumericDate(
 		time.Now().Add(
 			time.Duration(expirationSecs)*time.Second,
@@ -34,6 +34,7 @@ func GetClaims(userId int, expirationSecs int) entities.Claims { // get jwt clai
 	)
 
 	return entities.Claims{
+		IsAdmin: isAdmin,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject: strconv.Itoa(userId),
 			ExpiresAt: date,

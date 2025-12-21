@@ -4,6 +4,7 @@ type User struct {
 	ID int `json:"id"`
 	CreatedAt string `json:"created_at"`
 	Name string `json:"name"`
+	IsAdmin bool `json:"is_admin"`
 }
 
 type CreateUserRequest struct {

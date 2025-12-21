@@ -82,7 +82,9 @@ func (s Server) RefreshTokens(c echo.Context) error {
 		return e.Unauthorized(err, "invalid user id")
 	}
 
-	accessToken, refreshToken, err := s.service.auth.RefreshTokens(ctx, id)
+	isAdmin := claims.IsAdmin
+
+	accessToken, refreshToken, err := s.service.auth.RefreshTokens(ctx, id, isAdmin)
 
 	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, "/", accessToken.Claims.ExpiresAt.Time)
 	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, "/", refreshToken.Claims.ExpiresAt.Time)
