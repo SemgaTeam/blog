@@ -4,7 +4,6 @@ import (
 	"github.com/SemgaTeam/blog/internal/entities"
 	"github.com/SemgaTeam/blog/internal/dto"
 	"github.com/SemgaTeam/blog/internal/utils"
-	"github.com/SemgaTeam/blog/internal/repository"
 	"go.uber.org/zap"
 
 	"context"
@@ -19,14 +18,14 @@ type PostService interface {
 }
 
 type postServiceRepo struct {
-	post repository.PostRepository
+	post PostRepository
 }
 
 type postService struct {
 	repo postServiceRepo
 }
 
-func NewPostService(postRepo repository.PostRepository) PostService {
+func NewPostService(postRepo PostRepository) PostService {
 	return &postService{
 		repo: postServiceRepo{
 			postRepo,

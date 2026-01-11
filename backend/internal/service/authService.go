@@ -4,7 +4,6 @@ import (
 	"github.com/SemgaTeam/blog/internal/config"
 	"github.com/SemgaTeam/blog/internal/entities"
 	e "github.com/SemgaTeam/blog/internal/error"
-	"github.com/SemgaTeam/blog/internal/repository"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"go.uber.org/zap"
 
@@ -24,12 +23,12 @@ type authService struct {
 }
 
 type authServiceRepo struct {
-	token repository.TokenRepository
-	user repository.UserRepository
-	hash repository.HashRepository
+	token TokenRepository
+	user UserRepository
+	hash HashRepository
 }
 
-func NewAuthService(conf *config.Auth, tokenRepo repository.TokenRepository, userRepo repository.UserRepository, hashRepo repository.HashRepository) (AuthService, error) {
+func NewAuthService(conf *config.Auth, tokenRepo TokenRepository, userRepo UserRepository, hashRepo HashRepository) (AuthService, error) {
 	return &authService{
 		repo: authServiceRepo{
 			token: tokenRepo,

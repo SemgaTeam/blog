@@ -3,7 +3,6 @@ package service
 import (
 	"github.com/SemgaTeam/blog/internal/entities"
 	"github.com/SemgaTeam/blog/internal/dto"
-	"github.com/SemgaTeam/blog/internal/repository"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"go.uber.org/zap"
 
@@ -23,10 +22,10 @@ type userService struct {
 }
 
 type userServiceRepo struct {
-	user repository.UserRepository
+	user UserRepository
 }
 
-func NewUserService(userRepo repository.UserRepository) UserService {
+func NewUserService(userRepo UserRepository) UserService {
 	return &userService{
 		userServiceRepo{
 			user: userRepo,

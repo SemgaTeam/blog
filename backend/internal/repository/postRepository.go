@@ -11,25 +11,17 @@ import (
 	"errors"
 )
 
-type PostRepository interface {
-	CreatePost(string, string, int) (*entities.Post, error)
-	GetPost(int) (*entities.Post, error)
-	GetPosts(dto.GetPostParams) ([]entities.Post, int64, error)
-	UpdatePost(int, string, string) (*entities.Post, error)
-	DeletePost(int) (int, error)
-}
-
-type postRepository struct {
+type PostRepository struct {
 	db *gorm.DB
 }
 
-func NewPostRepository(db *gorm.DB) PostRepository {
-	return &postRepository{
+func NewPostRepository(db *gorm.DB) *PostRepository {
+	return &PostRepository{
 		db: db,
 	}
 }
 
-func (r *postRepository) CreatePost(name, contents string, authorId int) (*entities.Post, error) {
+func (r *PostRepository) CreatePost(name, contents string, authorId int) (*entities.Post, error) {
 	post := entities.Post{
 		Name: name,
 		Contents: contents,
@@ -47,7 +39,7 @@ func (r *postRepository) CreatePost(name, contents string, authorId int) (*entit
 	return &post, nil
 }
 
-func (r *postRepository) GetPost(id int) (*entities.Post, error) {
+func (r *PostRepository) GetPost(id int) (*entities.Post, error) {
 	var post entities.Post
 
 	if err := r.db.Where("id = ?", id).Take(&post).Error; err != nil {
@@ -61,7 +53,7 @@ func (r *postRepository) GetPost(id int) (*entities.Post, error) {
 	return &post, nil
 }
 
-func (r *postRepository) GetPosts(params dto.GetPostParams) ([]entities.Post, int64, error) {
+func (r *PostRepository) GetPosts(params dto.GetPostParams) ([]entities.Post, int64, error) {
 	var posts []entities.Post
 	var total int64
 
@@ -103,7 +95,7 @@ func (r *postRepository) GetPosts(params dto.GetPostParams) ([]entities.Post, in
 	return posts, total, nil
 }
 
-func (r *postRepository) UpdatePost(id int, name, contents string) (*entities.Post, error) {
+func (r *PostRepository) UpdatePost(id int, name, contents string) (*entities.Post, error) {
 	post := entities.Post{
 		ID: id,
 		Name: name,
@@ -125,7 +117,7 @@ func (r *postRepository) UpdatePost(id int, name, contents string) (*entities.Po
 	return &post, nil
 }
 
-func (r *postRepository) DeletePost(id int) (int, error) {
+func (r *PostRepository) DeletePost(id int) (int, error) {
 	post := entities.Post{
 		ID: id,
 	}
