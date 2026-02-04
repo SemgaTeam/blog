@@ -1,6 +1,11 @@
 # Blog
 Блог нашей команды
 
+# Bootstrapping
+1. Создать директорию **backend/logs**
+2. Cоздать .env файл и задать POSTGRES_NAME, POSTGRES_USER, POSTGRES_PASSWORD
+3. `docker compose up --build`
+
 # Blog API MVP
 1. CRUD для постов
 2. Аутентификация и авторизация членов команды
