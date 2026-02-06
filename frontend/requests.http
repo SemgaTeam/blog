@@ -1,0 +1,55 @@
+@baseUrl = http://localhost:3000
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJc0FkbWluIjpmYWxzZSwic3ViIjoiNDAiLCJleHAiOjE3Njk4OTE5OTl9.drZUGbzRFC8KvfHc3Zhsu_MGFC4AVpVSnbf6MAFW2AA
+
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJc0FkbWluIjpmYWxzZSwic3ViIjoiNDAiLCJleHAiOjE3NzA0MTAzOTl9.KDl50K3SPn-pp2LJqINAgoxg4qFsuYnnP8RQSgs96D8
+
+
+//register a new user does work
+POST  {{baseUrl}}/api/auth/signin
+Content-Type: application/json
+
+{
+  "name": "lol11",
+  "password": "password",
+  "is_admin":	true
+
+}
+
+###
+// login existing user does't work
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+
+{
+  "name": "user",
+  "password": "password"
+
+}
+
+###
+// refresh access token doesn't word
+POST {{baseUrl}}/api/auth/refresh
+
+
+###
+// logout user doesn't work
+POST {{baseUrl}}api/auth/logout
+
+###
+// get user
+GET {{baseUrl}}/api/user
+
+###
+GET {{baseUrl}}/api/post
+
+###
+
+POST {{baseUrl}}/api/post
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "My first post",
+  "content": "This is the content of my first post."
+}
