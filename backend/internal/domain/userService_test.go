@@ -1,4 +1,4 @@
-package service
+package domain
 
 import (
 	"github.com/SemgaTeam/blog/internal/dto"
@@ -16,19 +16,19 @@ func TestCreateUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock.NewMockUserRepository(ctrl)
-	userService := NewUserService(mockUserRepo)	
+	userService := NewUserService(mockUserRepo)
 
-	tests := []struct{
-		testName string
-		name string 
-		password string
+	tests := []struct {
+		testName  string
+		name      string
+		password  string
 		wantError bool
 		setupMock func()
 	}{
-		{ 
-			testName: "success case", 
-			name: "user",
-			password: "password",
+		{
+			testName:  "success case",
+			name:      "user",
+			password:  "password",
 			wantError: false,
 			setupMock: func() {
 				mockUserRepo.
@@ -37,8 +37,8 @@ func TestCreateUser(t *testing.T) {
 					Return(&entities.User{}, nil)
 			},
 		},
-		{ 
-			testName: "empty name", 
+		{
+			testName:  "empty name",
 			wantError: true,
 			setupMock: func() {
 				mockUserRepo.
@@ -48,15 +48,15 @@ func TestCreateUser(t *testing.T) {
 			},
 		},
 		{
-			testName: "repository error",
-			name: "user",
-			password: "password",
+			testName:  "repository error",
+			name:      "user",
+			password:  "password",
 			wantError: true,
 			setupMock: func() {
 				mockUserRepo.
 					EXPECT().
 					CreateUser(gomock.Any(), gomock.Any()).
-					Return(nil, errors.New("repository error"))	
+					Return(nil, errors.New("repository error"))
 			},
 		},
 	}
@@ -69,7 +69,7 @@ func TestCreateUser(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("CreateUser() error = %v, wantError %v", err, tt.wantError)
 			}
-		}) 
+		})
 	}
 }
 
@@ -78,17 +78,17 @@ func TestGetUserById(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock.NewMockUserRepository(ctrl)
-	userService := NewUserService(mockUserRepo)	
+	userService := NewUserService(mockUserRepo)
 
-	tests := []struct{
-		testName string
-		id int
+	tests := []struct {
+		testName  string
+		id        int
 		wantError bool
 		setupMock func()
 	}{
-		{ 
-			testName: "success case", 
-			id: 1,
+		{
+			testName:  "success case",
+			id:        1,
 			wantError: false,
 			setupMock: func() {
 				mockUserRepo.
@@ -98,13 +98,13 @@ func TestGetUserById(t *testing.T) {
 			},
 		},
 		{
-			testName: "repository error",
+			testName:  "repository error",
 			wantError: true,
 			setupMock: func() {
 				mockUserRepo.
 					EXPECT().
 					GetUserById(gomock.Any()).
-					Return(nil, errors.New("repository error"))	
+					Return(nil, errors.New("repository error"))
 			},
 		},
 	}
@@ -117,7 +117,7 @@ func TestGetUserById(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("GetUserById() error = %v, wantError %v", err, tt.wantError)
 			}
-		}) 
+		})
 	}
 }
 
@@ -128,19 +128,19 @@ func TestGetUsers(t *testing.T) {
 	mockUserRepo := mock.NewMockUserRepository(ctrl)
 	userService := NewUserService(mockUserRepo)
 
-	tests := []struct{
-		name string
-		params dto.GetUserParams
-		total int64
+	tests := []struct {
+		name      string
+		params    dto.GetUserParams
+		total     int64
 		wantError bool
 		setupMock func()
 	}{
-		{ 
-			name: "valid input: IDs", 
+		{
+			name: "valid input: IDs",
 			params: dto.GetUserParams{
 				IDs: []int{1, 2, 3},
 			},
-			total: 3,
+			total:     3,
 			wantError: false,
 			setupMock: func() {
 				mockUserRepo.
@@ -149,12 +149,12 @@ func TestGetUsers(t *testing.T) {
 					Return([]entities.User{}, int64(3), nil)
 			},
 		},
-		{ 
-			name: "valid input: Name", 
+		{
+			name: "valid input: Name",
 			params: dto.GetUserParams{
 				Name: "user",
 			},
-			total: 3,
+			total:     3,
 			wantError: false,
 			setupMock: func() {
 				mockUserRepo.
@@ -168,7 +168,7 @@ func TestGetUsers(t *testing.T) {
 			params: dto.GetUserParams{
 				IDs: []int{},
 			},
-			total: 0,
+			total:     0,
 			wantError: false,
 			setupMock: func() {
 				mockUserRepo.
@@ -177,12 +177,12 @@ func TestGetUsers(t *testing.T) {
 					Return(nil, int64(0), nil)
 			},
 		},
-		{ 
-			name: "repository error", 
+		{
+			name: "repository error",
 			params: dto.GetUserParams{
 				IDs: []int{1, 2, 3},
 			},
-			total: 0,
+			total:     0,
 			wantError: true,
 			setupMock: func() {
 				mockUserRepo.
@@ -205,7 +205,7 @@ func TestGetUsers(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("GetUsers() error = %v, wantError %v", err, tt.wantError)
 			}
-		}) 
+		})
 	}
 }
 
@@ -214,21 +214,21 @@ func TestUpdateUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock.NewMockUserRepository(ctrl)
-	userService := NewUserService(mockUserRepo)	
+	userService := NewUserService(mockUserRepo)
 
-	tests := []struct{
-		testName string
-		id int
-		name string
-		password string
+	tests := []struct {
+		testName  string
+		id        int
+		name      string
+		password  string
 		wantError bool
 		setupMock func()
 	}{
-		{ 
-			testName: "valid input", 
-			id: 1,
-			name: "user",
-			password: "password",
+		{
+			testName:  "valid input",
+			id:        1,
+			name:      "user",
+			password:  "password",
 			wantError: false,
 			setupMock: func() {
 				mockUserRepo.
@@ -237,11 +237,11 @@ func TestUpdateUser(t *testing.T) {
 					Return(&entities.User{}, nil)
 			},
 		},
-		{ 
-			testName: "empty name", 
-			id: 1,
-			name: "",
-			password: "password",
+		{
+			testName:  "empty name",
+			id:        1,
+			name:      "",
+			password:  "password",
 			wantError: false,
 			setupMock: func() {
 				mockUserRepo.
@@ -250,11 +250,11 @@ func TestUpdateUser(t *testing.T) {
 					Return(&entities.User{}, nil)
 			},
 		},
-		{ 
-			testName: "empty password", 
-			id: 1,
-			name: "user",
-			password: "",
+		{
+			testName:  "empty password",
+			id:        1,
+			name:      "user",
+			password:  "",
 			wantError: false,
 			setupMock: func() {
 				mockUserRepo.
@@ -263,11 +263,11 @@ func TestUpdateUser(t *testing.T) {
 					Return(&entities.User{}, nil)
 			},
 		},
-		{ 
-			testName: "invalid id", 
-			id: -1,
-			name: "user",
-			password: "password",
+		{
+			testName:  "invalid id",
+			id:        -1,
+			name:      "user",
+			password:  "password",
 			wantError: true,
 			setupMock: func() {
 				mockUserRepo.
@@ -276,10 +276,10 @@ func TestUpdateUser(t *testing.T) {
 					Return(nil, errors.New("invalid id"))
 			},
 		},
-		{ 
-			testName: "repository error", 
-			name: "user",
-			password: "password",
+		{
+			testName:  "repository error",
+			name:      "user",
+			password:  "password",
 			wantError: true,
 			setupMock: func() {
 				mockUserRepo.
@@ -298,7 +298,7 @@ func TestUpdateUser(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("UpdateUser() error = %v, wantError %v", err, tt.wantError)
 			}
-		}) 
+		})
 	}
 }
 
@@ -307,17 +307,17 @@ func TestDeleteUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock.NewMockUserRepository(ctrl)
-	userService := NewUserService(mockUserRepo)	
+	userService := NewUserService(mockUserRepo)
 
-	tests := []struct{
-		name string
-		id int
+	tests := []struct {
+		name      string
+		id        int
 		wantError bool
 		setupMock func()
 	}{
-		{ 
-			name: "valid input", 
-			id: 1,
+		{
+			name:      "valid input",
+			id:        1,
 			wantError: false,
 			setupMock: func() {
 				mockUserRepo.
@@ -327,19 +327,19 @@ func TestDeleteUser(t *testing.T) {
 			},
 		},
 		{
-			name: "invalid id",
-			id: -1,
+			name:      "invalid id",
+			id:        -1,
 			wantError: true,
 			setupMock: func() {
 				mockUserRepo.
 					EXPECT().
 					DeleteUser(gomock.Any()).
-					Return(0, errors.New("invalid id"))	
+					Return(0, errors.New("invalid id"))
 			},
 		},
-		{ 
-			name: "repository error", 
-			id: 1, 
+		{
+			name:      "repository error",
+			id:        1,
 			wantError: true,
 			setupMock: func() {
 				mockUserRepo.
@@ -358,6 +358,6 @@ func TestDeleteUser(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("DeleteUser() error = %v, wantError %v", err, tt.wantError)
 			}
-		}) 
+		})
 	}
 }

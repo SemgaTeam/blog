@@ -1,4 +1,4 @@
-package service
+package domain
 
 import (
 	"github.com/SemgaTeam/blog/internal/dto"
@@ -16,21 +16,21 @@ func TestCreatePostValidation(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockPostRepo := mock.NewMockPostRepository(ctrl)
-	postService := NewPostService(mockPostRepo)	
+	postService := NewPostService(mockPostRepo)
 
-	tests := []struct{
-		name string
-		title string 
-		content string
-		authorID int
+	tests := []struct {
+		name      string
+		title     string
+		content   string
+		authorID  int
 		wantError bool
 		setupMock func()
 	}{
-		{ 
-			name: "valid post", 
-			title: "title", 
-			content: "content", 
-			authorID: 1, 
+		{
+			name:      "valid post",
+			title:     "title",
+			content:   "content",
+			authorID:  1,
 			wantError: false,
 			setupMock: func() {
 				mockPostRepo.
@@ -39,11 +39,11 @@ func TestCreatePostValidation(t *testing.T) {
 					Return(&entities.Post{}, nil)
 			},
 		},
-		{ 
-			name: "empty title", 
-			title: "", 
-			content: "content", 
-			authorID: 1, 
+		{
+			name:      "empty title",
+			title:     "",
+			content:   "content",
+			authorID:  1,
 			wantError: true,
 			setupMock: func() {
 				mockPostRepo.
@@ -53,23 +53,23 @@ func TestCreatePostValidation(t *testing.T) {
 			},
 		},
 		{
-			name: "invalid author id",
-			title: "title",
-			content: "content",
-			authorID: -1,
+			name:      "invalid author id",
+			title:     "title",
+			content:   "content",
+			authorID:  -1,
 			wantError: true,
 			setupMock: func() {
 				mockPostRepo.
 					EXPECT().
 					CreatePost(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, errors.New("invalid author id"))	
+					Return(nil, errors.New("invalid author id"))
 			},
 		},
-		{ 
-			name: "repository error", 
-			title: "title", 
-			content: "content", 
-			authorID: 1, 
+		{
+			name:      "repository error",
+			title:     "title",
+			content:   "content",
+			authorID:  1,
 			wantError: true,
 			setupMock: func() {
 				mockPostRepo.
@@ -88,7 +88,7 @@ func TestCreatePostValidation(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("CreatePost() error = %v, wantError %v", err, tt.wantError)
 			}
-		}) 
+		})
 	}
 }
 
@@ -97,17 +97,17 @@ func TestGetPostValidation(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockPostRepo := mock.NewMockPostRepository(ctrl)
-	postService := NewPostService(mockPostRepo)	
+	postService := NewPostService(mockPostRepo)
 
-	tests := []struct{
-		name string
-		id int
+	tests := []struct {
+		name      string
+		id        int
 		wantError bool
 		setupMock func()
 	}{
-		{ 
-			name: "valid input", 
-			id: 1,
+		{
+			name:      "valid input",
+			id:        1,
 			wantError: false,
 			setupMock: func() {
 				mockPostRepo.
@@ -116,9 +116,9 @@ func TestGetPostValidation(t *testing.T) {
 					Return(&entities.Post{}, nil)
 			},
 		},
-		{ 
-			name: "repository error", 
-			id: 1,
+		{
+			name:      "repository error",
+			id:        1,
 			wantError: true,
 			setupMock: func() {
 				mockPostRepo.
@@ -137,7 +137,7 @@ func TestGetPostValidation(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("GetPost() error = %v, wantError %v", err, tt.wantError)
 			}
-		}) 
+		})
 	}
 }
 
@@ -146,21 +146,21 @@ func TestGetPostsValidation(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockPostRepo := mock.NewMockPostRepository(ctrl)
-	postService := NewPostService(mockPostRepo)	
+	postService := NewPostService(mockPostRepo)
 
-	tests := []struct{
-		name string
-		params dto.GetPostParams
-		total int64
+	tests := []struct {
+		name      string
+		params    dto.GetPostParams
+		total     int64
 		wantError bool
 		setupMock func()
 	}{
-		{ 
-			name: "valid input: IDs", 
+		{
+			name: "valid input: IDs",
 			params: dto.GetPostParams{
 				IDs: []int{1, 2, 3},
 			},
-			total: 3,
+			total:     3,
 			wantError: false,
 			setupMock: func() {
 				mockPostRepo.
@@ -169,12 +169,12 @@ func TestGetPostsValidation(t *testing.T) {
 					Return([]entities.Post{}, int64(3), nil)
 			},
 		},
-		{ 
-			name: "valid input: Name", 
+		{
+			name: "valid input: Name",
 			params: dto.GetPostParams{
 				Name: "post",
 			},
-			total: 3,
+			total:     3,
 			wantError: false,
 			setupMock: func() {
 				mockPostRepo.
@@ -183,12 +183,12 @@ func TestGetPostsValidation(t *testing.T) {
 					Return([]entities.Post{}, int64(3), nil)
 			},
 		},
-		{ 
-			name: "valid input: AuthorID", 
+		{
+			name: "valid input: AuthorID",
 			params: dto.GetPostParams{
 				AuthorID: 1,
 			},
-			total: 1,
+			total:     1,
 			wantError: false,
 			setupMock: func() {
 				mockPostRepo.
@@ -202,7 +202,7 @@ func TestGetPostsValidation(t *testing.T) {
 			params: dto.GetPostParams{
 				IDs: []int{},
 			},
-			total: 0,
+			total:     0,
 			wantError: false,
 			setupMock: func() {
 				mockPostRepo.
@@ -216,7 +216,7 @@ func TestGetPostsValidation(t *testing.T) {
 			params: dto.GetPostParams{
 				AuthorID: -1,
 			},
-			total: 0,
+			total:     0,
 			wantError: true,
 			setupMock: func() {
 				mockPostRepo.
@@ -225,12 +225,12 @@ func TestGetPostsValidation(t *testing.T) {
 					Return(nil, int64(0), errors.New("invalid author id"))
 			},
 		},
-		{ 
-			name: "repository error", 
+		{
+			name: "repository error",
 			params: dto.GetPostParams{
 				IDs: []int{1, 2, 3},
 			},
-			total: 0,
+			total:     0,
 			wantError: true,
 			setupMock: func() {
 				mockPostRepo.
@@ -253,7 +253,7 @@ func TestGetPostsValidation(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("GetPosts() error = %v, wantError %v", err, tt.wantError)
 			}
-		}) 
+		})
 	}
 }
 
@@ -262,21 +262,21 @@ func TestUpdatePostValidation(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockPostRepo := mock.NewMockPostRepository(ctrl)
-	postService := NewPostService(mockPostRepo)	
+	postService := NewPostService(mockPostRepo)
 
-	tests := []struct{
-		name string
-		id int
-		title string 
-		content string
+	tests := []struct {
+		name      string
+		id        int
+		title     string
+		content   string
 		wantError bool
 		setupMock func()
 	}{
-		{ 
-			name: "valid input", 
-			id: 1,
-			title: "title", 
-			content: "content", 
+		{
+			name:      "valid input",
+			id:        1,
+			title:     "title",
+			content:   "content",
 			wantError: false,
 			setupMock: func() {
 				mockPostRepo.
@@ -285,11 +285,11 @@ func TestUpdatePostValidation(t *testing.T) {
 					Return(&entities.Post{}, nil)
 			},
 		},
-		{ 
-			name: "empty title", 
-			id: 1,
-			title: "", 
-			content: "content", 
+		{
+			name:      "empty title",
+			id:        1,
+			title:     "",
+			content:   "content",
 			wantError: true,
 			setupMock: func() {
 				mockPostRepo.
@@ -299,23 +299,23 @@ func TestUpdatePostValidation(t *testing.T) {
 			},
 		},
 		{
-			name: "invalid id",
-			id: -1,
-			title: "title",
-			content: "content",
+			name:      "invalid id",
+			id:        -1,
+			title:     "title",
+			content:   "content",
 			wantError: true,
 			setupMock: func() {
 				mockPostRepo.
 					EXPECT().
 					UpdatePost(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, errors.New("invalid id"))	
+					Return(nil, errors.New("invalid id"))
 			},
 		},
-		{ 
-			name: "repository error", 
-			id: 1, 
-			title: "title", 
-			content: "content", 
+		{
+			name:      "repository error",
+			id:        1,
+			title:     "title",
+			content:   "content",
 			wantError: true,
 			setupMock: func() {
 				mockPostRepo.
@@ -334,7 +334,7 @@ func TestUpdatePostValidation(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("UpdatePost() error = %v, wantError %v", err, tt.wantError)
 			}
-		}) 
+		})
 	}
 }
 
@@ -343,17 +343,17 @@ func TestDeletePostValidation(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockPostRepo := mock.NewMockPostRepository(ctrl)
-	postService := NewPostService(mockPostRepo)	
+	postService := NewPostService(mockPostRepo)
 
-	tests := []struct{
-		name string
-		id int
+	tests := []struct {
+		name      string
+		id        int
 		wantError bool
 		setupMock func()
 	}{
-		{ 
-			name: "valid input", 
-			id: 1,
+		{
+			name:      "valid input",
+			id:        1,
 			wantError: false,
 			setupMock: func() {
 				mockPostRepo.
@@ -363,19 +363,19 @@ func TestDeletePostValidation(t *testing.T) {
 			},
 		},
 		{
-			name: "invalid id",
-			id: -1,
+			name:      "invalid id",
+			id:        -1,
 			wantError: true,
 			setupMock: func() {
 				mockPostRepo.
 					EXPECT().
 					DeletePost(gomock.Any()).
-					Return(0, errors.New("invalid id"))	
+					Return(0, errors.New("invalid id"))
 			},
 		},
-		{ 
-			name: "repository error", 
-			id: 1, 
+		{
+			name:      "repository error",
+			id:        1,
 			wantError: true,
 			setupMock: func() {
 				mockPostRepo.
@@ -394,6 +394,6 @@ func TestDeletePostValidation(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("DeletePost() error = %v, wantError %v", err, tt.wantError)
 			}
-		}) 
+		})
 	}
 }

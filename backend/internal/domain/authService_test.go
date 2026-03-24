@@ -1,4 +1,4 @@
-package service
+package domain
 
 import (
 	"github.com/SemgaTeam/blog/internal/config"
@@ -26,28 +26,28 @@ func TestLogIn(t *testing.T) {
 		t.Errorf("error initialization auth service: conf = %v", conf)
 	}
 
-	tests := []struct{
-		testName string
-		name string
-		password string
+	tests := []struct {
+		testName  string
+		name      string
+		password  string
 		wantError bool
 		setupMock func()
 	}{
-		{ 
-			testName: "success case", 
-			name: "user",
-			password: "password",
+		{
+			testName:  "success case",
+			name:      "user",
+			password:  "password",
 			wantError: false,
 			setupMock: func() {
-				mockUserRepo. 
+				mockUserRepo.
 					EXPECT().
 					GetUserByName(gomock.Any()).
-					Return(&entities.User{}, nil)	
+					Return(&entities.User{}, nil)
 
 				mockHashRepo.
 					EXPECT().
 					IsPasswordValid(gomock.Any(), gomock.Any()).
-					Return(true)	
+					Return(true)
 
 				mockTokenRepo.
 					EXPECT().
@@ -56,74 +56,74 @@ func TestLogIn(t *testing.T) {
 					Times(2)
 			},
 		},
-		{ 
-			testName: "invalid password", 
-			name: "user",
-			password: "password",
+		{
+			testName:  "invalid password",
+			name:      "user",
+			password:  "password",
 			wantError: true,
 			setupMock: func() {
-				mockUserRepo. 
+				mockUserRepo.
 					EXPECT().
 					GetUserByName(gomock.Any()).
-					Return(&entities.User{}, nil)	
+					Return(&entities.User{}, nil)
 
 				mockHashRepo.
 					EXPECT().
 					IsPasswordValid(gomock.Any(), gomock.Any()).
-					Return(false)	
+					Return(false)
 			},
 		},
 		{
-			testName: "empty name",
-			name: "",
-			password: "password",
+			testName:  "empty name",
+			name:      "",
+			password:  "password",
 			wantError: true,
 			setupMock: func() {
-				mockUserRepo. 
+				mockUserRepo.
 					EXPECT().
 					GetUserByName(gomock.Any()).
-					Return(nil, errors.New("empty name"))	
+					Return(nil, errors.New("empty name"))
 			},
 		},
 		{
-			testName: "user not found",
-			name: "user",
-			password: "password",
+			testName:  "user not found",
+			name:      "user",
+			password:  "password",
 			wantError: true,
 			setupMock: func() {
-				mockUserRepo. 
+				mockUserRepo.
 					EXPECT().
 					GetUserByName(gomock.Any()).
-					Return(nil, errors.New("user not found"))	
+					Return(nil, errors.New("user not found"))
 			},
 		},
-		{ 
-			testName: "user repository error", 
-			name: "user",
-			password: "password",
+		{
+			testName:  "user repository error",
+			name:      "user",
+			password:  "password",
 			wantError: true,
 			setupMock: func() {
-				mockUserRepo. 
+				mockUserRepo.
 					EXPECT().
 					GetUserByName(gomock.Any()).
-					Return(nil, errors.New("repository error"))	
+					Return(nil, errors.New("repository error"))
 			},
 		},
-		{ 
-			testName: "hash repository error", 
-			name: "user",
-			password: "password",
+		{
+			testName:  "hash repository error",
+			name:      "user",
+			password:  "password",
 			wantError: true,
 			setupMock: func() {
-				mockUserRepo. 
+				mockUserRepo.
 					EXPECT().
 					GetUserByName(gomock.Any()).
-					Return(&entities.User{}, nil)	
+					Return(&entities.User{}, nil)
 
 				mockHashRepo.
 					EXPECT().
 					IsPasswordValid(gomock.Any(), gomock.Any()).
-					Return(true)	
+					Return(true)
 
 				mockTokenRepo.
 					EXPECT().
@@ -141,7 +141,7 @@ func TestLogIn(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("LogIn() error = %v, wantError %v", err, tt.wantError)
 			}
-		}) 
+		})
 	}
 }
 
@@ -160,28 +160,28 @@ func TestSignIn(t *testing.T) {
 		t.Errorf("error initialization auth service: conf = %v", conf)
 	}
 
-	tests := []struct{
-		testName string
-		name string
-		password string
+	tests := []struct {
+		testName  string
+		name      string
+		password  string
 		wantError bool
 		setupMock func()
 	}{
-		{ 
-			testName: "success case", 
-			name: "user",
-			password: "password",
+		{
+			testName:  "success case",
+			name:      "user",
+			password:  "password",
 			wantError: false,
 			setupMock: func() {
 				mockHashRepo.
 					EXPECT().
 					HashPassword(gomock.Any()).
-					Return("password", nil)	
+					Return("password", nil)
 
-				mockUserRepo. 
+				mockUserRepo.
 					EXPECT().
 					CreateUser(gomock.Any(), "password").
-					Return(&entities.User{}, nil)	
+					Return(&entities.User{}, nil)
 
 				mockTokenRepo.
 					EXPECT().
@@ -190,67 +190,67 @@ func TestSignIn(t *testing.T) {
 					Times(2)
 			},
 		},
-		{ 
-			testName: "user already exists", 
-			name: "user",
-			password: "password",
+		{
+			testName:  "user already exists",
+			name:      "user",
+			password:  "password",
 			wantError: true,
 			setupMock: func() {
 				mockHashRepo.
 					EXPECT().
 					HashPassword(gomock.Any()).
-					Return("password", nil)	
+					Return("password", nil)
 
-				mockUserRepo. 
+				mockUserRepo.
 					EXPECT().
 					CreateUser(gomock.Any(), "password").
-					Return(nil, errors.New("user already exists"))	
+					Return(nil, errors.New("user already exists"))
 			},
 		},
 		{
-			testName: "empty name",
-			name: "",
-			password: "password",
+			testName:  "empty name",
+			name:      "",
+			password:  "password",
 			wantError: true,
 			setupMock: func() {
 				mockHashRepo.
 					EXPECT().
 					HashPassword(gomock.Any()).
-					Return("password", nil)	
+					Return("password", nil)
 
-				mockUserRepo. 
+				mockUserRepo.
 					EXPECT().
 					CreateUser(gomock.Any(), "password").
-					Return(nil, errors.New("empty name"))	
+					Return(nil, errors.New("empty name"))
 			},
 		},
-		{ 
-			testName: "user repository error", 
-			name: "user",
-			password: "password",
+		{
+			testName:  "user repository error",
+			name:      "user",
+			password:  "password",
 			wantError: true,
 			setupMock: func() {
 				mockHashRepo.
 					EXPECT().
 					HashPassword(gomock.Any()).
-					Return("password", nil)	
+					Return("password", nil)
 
-				mockUserRepo. 
+				mockUserRepo.
 					EXPECT().
 					CreateUser(gomock.Any(), "password").
-					Return(nil, errors.New("repository error"))	
+					Return(nil, errors.New("repository error"))
 			},
 		},
-		{ 
-			testName: "hash repository error", 
-			name: "user",
-			password: "password",
+		{
+			testName:  "hash repository error",
+			name:      "user",
+			password:  "password",
 			wantError: true,
 			setupMock: func() {
 				mockHashRepo.
 					EXPECT().
 					HashPassword(gomock.Any()).
-					Return("", errors.New("repository error"))	
+					Return("", errors.New("repository error"))
 			},
 		},
 	}
@@ -263,7 +263,7 @@ func TestSignIn(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("SignIn() error = %v, wantError %v", err, tt.wantError)
 			}
-		}) 
+		})
 	}
 }
 
@@ -282,17 +282,17 @@ func TestRefreshTokens(t *testing.T) {
 		t.Errorf("error initialization auth service: conf = %v", conf)
 	}
 
-	tests := []struct{
-		testName string
-		id int
-		isAdmin bool
+	tests := []struct {
+		testName  string
+		id        int
+		isAdmin   bool
 		wantError bool
 		setupMock func()
 	}{
-		{ 
-			testName: "success case (not admin)", 
-			id: 1,
-			isAdmin: false,
+		{
+			testName:  "success case (not admin)",
+			id:        1,
+			isAdmin:   false,
 			wantError: false,
 			setupMock: func() {
 				mockTokenRepo.
@@ -302,10 +302,10 @@ func TestRefreshTokens(t *testing.T) {
 					Times(2)
 			},
 		},
-		{ 
-			testName: "success case (admin)", 
-			id: 1,
-			isAdmin: true,
+		{
+			testName:  "success case (admin)",
+			id:        1,
+			isAdmin:   true,
 			wantError: false,
 			setupMock: func() {
 				mockTokenRepo.
@@ -315,9 +315,9 @@ func TestRefreshTokens(t *testing.T) {
 					Times(2)
 			},
 		},
-		{ 
-			testName: "token repository error", 
-			id: 1,
+		{
+			testName:  "token repository error",
+			id:        1,
 			wantError: true,
 			setupMock: func() {
 				mockTokenRepo.
@@ -336,7 +336,7 @@ func TestRefreshTokens(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("RefreshTokens() error = %v, wantError %v", err, tt.wantError)
 			}
-		}) 
+		})
 	}
 }
 
@@ -355,54 +355,54 @@ func TestGetMe(t *testing.T) {
 		t.Errorf("error initialization auth service: conf = %v", conf)
 	}
 
-	tests := []struct{
-		testName string
-		userId int
+	tests := []struct {
+		testName  string
+		userId    int
 		wantError bool
 		setupMock func()
 	}{
-		{ 
-			testName: "success case", 
-			userId: 1,
+		{
+			testName:  "success case",
+			userId:    1,
 			wantError: false,
 			setupMock: func() {
 				mockUserRepo.
 					EXPECT().
 					GetUserById(gomock.Eq(1)).
-					Return(&entities.User{}, nil)	
-			},
-		},
-		{ 
-			testName: "invalid id", 
-			userId: -1,
-			wantError: true,
-			setupMock: func() {
-				mockUserRepo. 
-					EXPECT().
-					GetUserById(gomock.Eq(-1)).
-					Return(nil, errors.New("invalid id"))	
+					Return(&entities.User{}, nil)
 			},
 		},
 		{
-			testName: "user not found",
-			userId: 1,
+			testName:  "invalid id",
+			userId:    -1,
 			wantError: true,
 			setupMock: func() {
-				mockUserRepo. 
+				mockUserRepo.
 					EXPECT().
-					GetUserById(gomock.Eq(1)).
-					Return(nil, errors.New("user not found"))	
+					GetUserById(gomock.Eq(-1)).
+					Return(nil, errors.New("invalid id"))
 			},
 		},
-		{ 
-			testName: "user repository error", 
-			userId: 1,
+		{
+			testName:  "user not found",
+			userId:    1,
 			wantError: true,
 			setupMock: func() {
-				mockUserRepo. 
+				mockUserRepo.
 					EXPECT().
 					GetUserById(gomock.Eq(1)).
-					Return(nil, errors.New("repository error"))	
+					Return(nil, errors.New("user not found"))
+			},
+		},
+		{
+			testName:  "user repository error",
+			userId:    1,
+			wantError: true,
+			setupMock: func() {
+				mockUserRepo.
+					EXPECT().
+					GetUserById(gomock.Eq(1)).
+					Return(nil, errors.New("repository error"))
 			},
 		},
 	}
@@ -415,6 +415,6 @@ func TestGetMe(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Errorf("GetMe() error = %v, wantError %v", err, tt.wantError)
 			}
-		}) 
+		})
 	}
 }
