@@ -1,10 +1,10 @@
 package repository
 
 import (
+	"github.com/SemgaTeam/blog/internal/domain/entities"
 	"github.com/SemgaTeam/blog/internal/dto"
-	"github.com/SemgaTeam/blog/internal/utils"
-	"github.com/SemgaTeam/blog/internal/entities"
 	e "github.com/SemgaTeam/blog/internal/error"
+	"github.com/SemgaTeam/blog/internal/utils"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -32,7 +32,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 
 func (r *userRepository) CreateUser(name, password string) (*entities.User, error) {
 	user := entities.User{
-		Name: name,
+		Name:     name,
 		Password: password,
 	}
 
@@ -115,16 +115,15 @@ func (r *userRepository) GetUsers(params dto.GetUserParams) ([]entities.User, in
 
 func (r *userRepository) UpdateUser(id int, name, password string) (*entities.User, error) {
 	user := entities.User{
-		ID: id,
-		Name: name,
+		ID:       id,
+		Name:     name,
 		Password: password,
 	}
 
 	if err := r.db.
-								Clauses(clause.Returning{}).
-								Updates(&user).
-								Scan(&user).Error;
-						err != nil {
+		Clauses(clause.Returning{}).
+		Updates(&user).
+		Scan(&user).Error; err != nil {
 		return nil, e.Internal(err)
 	}
 

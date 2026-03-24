@@ -1,19 +1,19 @@
 package http
 
 import (
-	"github.com/SemgaTeam/blog/internal/entities"
+	"github.com/SemgaTeam/blog/internal/domain/entities"
+	"github.com/golang-jwt/jwt/v5"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
-	echojwt "github.com/labstack/echo-jwt/v4"
-	"github.com/golang-jwt/jwt/v5"
 
 	"context"
 	"net/http"
 )
 
 func SetLoggerMiddleware(baseLogger *zap.Logger) echo.MiddlewareFunc {
-	return func (next echo.HandlerFunc) echo.HandlerFunc {
-		return func (c echo.Context) error {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
 			reqID := c.Response().Header().Get(echo.HeaderXRequestID)
 
 			logger := baseLogger.With(zap.String("request_id", reqID))
@@ -30,9 +30,9 @@ func SetLoggerMiddleware(baseLogger *zap.Logger) echo.MiddlewareFunc {
 
 func GetAccessMiddleware(signingKey string, signingMethod string) echo.MiddlewareFunc {
 	accessMiddleware := echojwt.WithConfig(echojwt.Config{
-		SigningKey: []byte(signingKey),
-		TokenLookup: "cookie:accessToken",
-		ContextKey: "access",
+		SigningKey:    []byte(signingKey),
+		TokenLookup:   "cookie:accessToken",
+		ContextKey:    "access",
 		SigningMethod: signingMethod,
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
 			return new(entities.Claims)
@@ -47,9 +47,9 @@ func GetAccessMiddleware(signingKey string, signingMethod string) echo.Middlewar
 
 func GetRefreshMiddleware(signingKey string, signingMethod string) echo.MiddlewareFunc {
 	refreshMiddleware := echojwt.WithConfig(echojwt.Config{
-		SigningKey: []byte(signingKey),
-		TokenLookup: "cookie:refreshToken",
-		ContextKey: "refresh",
+		SigningKey:    []byte(signingKey),
+		TokenLookup:   "cookie:refreshToken",
+		ContextKey:    "refresh",
 		SigningMethod: signingMethod,
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
 			return new(entities.Claims)

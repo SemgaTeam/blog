@@ -1,8 +1,8 @@
 package repository
 
 import (
+	"github.com/SemgaTeam/blog/internal/domain/entities"
 	"github.com/SemgaTeam/blog/internal/dto"
-	"github.com/SemgaTeam/blog/internal/entities"
 	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"gorm.io/gorm"
@@ -31,7 +31,7 @@ func NewPostRepository(db *gorm.DB) PostRepository {
 
 func (r *postRepository) CreatePost(name, contents string, authorId int) (*entities.Post, error) {
 	post := entities.Post{
-		Name: name,
+		Name:     name,
 		Contents: contents,
 		AuthorID: authorId,
 	}
@@ -39,7 +39,7 @@ func (r *postRepository) CreatePost(name, contents string, authorId int) (*entit
 	if err := r.db.Create(&post).Error; err != nil {
 		if errors.Is(err, gorm.ErrCheckConstraintViolated) {
 			return nil, e.BadRequest(err, "invalid request body")
-		}	else {
+		} else {
 			return nil, e.Internal(err)
 		}
 	}
@@ -65,7 +65,7 @@ func (r *postRepository) GetPosts(params dto.GetPostParams) ([]entities.Post, in
 	var posts []entities.Post
 	var total int64
 
-	q := r.db.Model(&entities.Post{})	
+	q := r.db.Model(&entities.Post{})
 
 	if params.IDs != nil {
 		q = q.Where("id IN ?", params.IDs)
@@ -105,19 +105,18 @@ func (r *postRepository) GetPosts(params dto.GetPostParams) ([]entities.Post, in
 
 func (r *postRepository) UpdatePost(id int, name, contents string) (*entities.Post, error) {
 	post := entities.Post{
-		ID: id,
-		Name: name,
+		ID:       id,
+		Name:     name,
 		Contents: contents,
 	}
 
 	if err := r.db.
-							Clauses(clause.Returning{}).
-							Updates(&post).
-							Scan(&post).Error; 
-							err != nil {
+		Clauses(clause.Returning{}).
+		Updates(&post).
+		Scan(&post).Error; err != nil {
 		if errors.Is(err, gorm.ErrCheckConstraintViolated) {
 			return nil, e.BadRequest(err, "invalid request body")
-		}	else {
+		} else {
 			return nil, e.Internal(err)
 		}
 	}

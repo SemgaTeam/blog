@@ -1,8 +1,8 @@
 package domain
 
 import (
+	"github.com/SemgaTeam/blog/internal/domain/entities"
 	"github.com/SemgaTeam/blog/internal/dto"
-	"github.com/SemgaTeam/blog/internal/entities"
 	"github.com/SemgaTeam/blog/internal/infrastructure/repository"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"go.uber.org/zap"
@@ -10,31 +10,23 @@ import (
 	"context"
 )
 
-type PostService interface {
-	CreatePost(context.Context, string, string, int) (*entities.Post, error)
-	GetPost(context.Context, int) (*entities.Post, error)
-	GetPosts(context.Context, dto.GetPostParams) ([]entities.Post, int64, error)
-	UpdatePost(context.Context, int, string, string) (*entities.Post, error)
-	DeletePost(context.Context, int) (int, error)
-}
-
-type postServiceRepo struct {
+type PostServiceRepo struct {
 	post repository.PostRepository
 }
 
-type postService struct {
-	repo postServiceRepo
+type PostService struct {
+	repo PostServiceRepo
 }
 
-func NewPostService(postRepo repository.PostRepository) PostService {
-	return &postService{
-		repo: postServiceRepo{
+func NewPostService(postRepo repository.PostRepository) *PostService {
+	return &PostService{
+		repo: PostServiceRepo{
 			postRepo,
 		},
 	}
 }
 
-func (s *postService) CreatePost(ctx context.Context, name, contents string, authorId int) (*entities.Post, error) {
+func (s *PostService) CreatePost(ctx context.Context, name, contents string, authorId int) (*entities.Post, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	post, err := s.repo.post.CreatePost(name, contents, authorId)
@@ -47,7 +39,7 @@ func (s *postService) CreatePost(ctx context.Context, name, contents string, aut
 	return post, nil
 }
 
-func (s *postService) GetPost(ctx context.Context, id int) (*entities.Post, error) {
+func (s *PostService) GetPost(ctx context.Context, id int) (*entities.Post, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	post, err := s.repo.post.GetPost(id)
@@ -60,7 +52,7 @@ func (s *postService) GetPost(ctx context.Context, id int) (*entities.Post, erro
 	return post, nil
 }
 
-func (s *postService) GetPosts(ctx context.Context, params dto.GetPostParams) ([]entities.Post, int64, error) {
+func (s *PostService) GetPosts(ctx context.Context, params dto.GetPostParams) ([]entities.Post, int64, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	posts, total, err := s.repo.post.GetPosts(params)
@@ -73,7 +65,7 @@ func (s *postService) GetPosts(ctx context.Context, params dto.GetPostParams) ([
 	return posts, total, nil
 }
 
-func (s *postService) UpdatePost(ctx context.Context, id int, name, contents string) (*entities.Post, error) {
+func (s *PostService) UpdatePost(ctx context.Context, id int, name, contents string) (*entities.Post, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	post, err := s.repo.post.UpdatePost(id, name, contents)
@@ -86,7 +78,7 @@ func (s *postService) UpdatePost(ctx context.Context, id int, name, contents str
 	return post, nil
 }
 
-func (s *postService) DeletePost(ctx context.Context, id int) (int, error) {
+func (s *PostService) DeletePost(ctx context.Context, id int) (int, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	_, err := s.repo.post.DeletePost(id)

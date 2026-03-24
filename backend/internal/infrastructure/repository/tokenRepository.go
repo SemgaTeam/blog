@@ -1,18 +1,18 @@
 package repository
 
 import (
-	"github.com/SemgaTeam/blog/internal/entities"
-	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/SemgaTeam/blog/internal/config"
+	"github.com/SemgaTeam/blog/internal/domain/entities"
+	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type TokenRepository interface {
-	GenerateAndSignToken(entities.Claims) (*entities.AuthToken, error) 
+	GenerateAndSignToken(entities.Claims) (*entities.AuthToken, error)
 }
 
 type tokenRepository struct {
-	conf *config.Auth
+	conf          *config.Auth
 	signingMethod jwt.SigningMethod
 }
 
@@ -27,7 +27,7 @@ func NewTokenRepository(conf *config.Config) (TokenRepository, error) {
 	}
 
 	return &tokenRepository{
-		conf: conf.Auth,
+		conf:          conf.Auth,
 		signingMethod: signingMethod,
 	}, nil
 }
@@ -40,7 +40,7 @@ func (r *tokenRepository) GenerateAndSignToken(claims entities.Claims) (*entitie
 	}
 
 	return &entities.AuthToken{
-		Value: signedToken,
+		Value:  signedToken,
 		Claims: claims,
 	}, nil
 }

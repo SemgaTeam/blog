@@ -11,13 +11,13 @@ import (
 
 func (s Server) CreateUser(c echo.Context) error {
 	ctx := c.Request().Context()
-	var request dto.CreateUserRequest	
+	var request dto.CreateUserRequest
 
 	if err := c.Bind(&request); err != nil {
 		return e.BadRequest(err, "invalid request body")
 	}
 
-	user, err := s.service.user.CreateUser(ctx, request.Name, request.Password)
+	user, err := s.service.CreateUser(ctx, request.Name, request.Password)
 	if err != nil {
 		return err
 	}
@@ -30,14 +30,14 @@ func (s Server) CreateUser(c echo.Context) error {
 func (s Server) GetUserById(c echo.Context) error {
 	ctx := c.Request().Context()
 	var response dto.GetUserResponse
-	
+
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return e.BadRequest(err, "invalid id")
 	}
 
-	user, err := s.service.user.GetUserById(ctx, id)
+	user, err := s.service.GetUserById(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -56,8 +56,8 @@ func (s Server) GetUsers(c echo.Context) error {
 	if err := c.Bind(&params); err != nil {
 		return e.ErrInvalidQueryParam
 	}
-	
-	users, total, err := s.service.user.GetUsers(ctx, params)
+
+	users, total, err := s.service.GetUsers(ctx, params)
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (s Server) UpdateUser(c echo.Context) error {
 		return e.BadRequest(err, "invalid request")
 	}
 
-	user, err := s.service.user.UpdateUser(ctx, id, request.Name, request.Password)
+	user, err := s.service.UpdateUser(ctx, id, request.Name, request.Password)
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func (s Server) DeleteUser(c echo.Context) error {
 		return e.BadRequest(err, "invalid id")
 	}
 
-	_, err = s.service.user.DeleteUser(ctx, id)
+	_, err = s.service.DeleteUser(ctx, id)
 	if err != nil {
 		return err
 	}

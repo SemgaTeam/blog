@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/SemgaTeam/blog/internal/entities"
+	"github.com/SemgaTeam/blog/internal/domain/entities"
 	"github.com/SemgaTeam/blog/internal/dto"
 	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/golang-jwt/jwt/v5"
@@ -10,10 +10,10 @@ import (
 	"gorm.io/gorm"
 
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
-	"errors"
 )
 
 func GetLoggerFromContext(ctx context.Context) *zap.Logger { // get logger from context
@@ -29,20 +29,20 @@ func GetLoggerFromContext(ctx context.Context) *zap.Logger { // get logger from 
 func GetClaims(userId int, isAdmin bool, expirationSecs int) entities.Claims { // get jwt claims for app use
 	date := jwt.NewNumericDate(
 		time.Now().Add(
-			time.Duration(expirationSecs)*time.Second,
+			time.Duration(expirationSecs) * time.Second,
 		),
 	)
 
 	return entities.Claims{
 		IsAdmin: isAdmin,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Subject: strconv.Itoa(userId),
+			Subject:   strconv.Itoa(userId),
 			ExpiresAt: date,
 		},
-	}	
+	}
 }
 
-func SetAuthCookie(name, value, path string, expires time.Time) *http.Cookie { 
+func SetAuthCookie(name, value, path string, expires time.Time) *http.Cookie {
 	var c http.Cookie
 
 	c.Name = name
@@ -57,7 +57,7 @@ func SetAuthCookie(name, value, path string, expires time.Time) *http.Cookie {
 }
 
 func HandleSorting(q *gorm.DB, s dto.Sorting, allowedFields []string) error { // handle sorting requests
-	if s.SortField == "" { 
+	if s.SortField == "" {
 		return nil
 	}
 
@@ -82,14 +82,14 @@ func HandlePagination(q *gorm.DB, p dto.Pagination) {
 		q = q.
 			Limit(p.PerPage).
 			Offset(
-				(p.Page - 1)*p.PerPage,
+				(p.Page - 1) * p.PerPage,
 			)
 	}
 }
 
 func GetClaimsFromContext(c echo.Context, tokenType string) (*entities.Claims, error) {
 	token := c.Get(tokenType).(*jwt.Token)
-	claims, ok := token.Claims.(*entities.Claims) 
+	claims, ok := token.Claims.(*entities.Claims)
 	if ok != true {
 		return nil, e.Unauthorized(errors.New("no claims"), "token is invalid")
 	}

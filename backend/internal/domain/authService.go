@@ -2,7 +2,7 @@ package domain
 
 import (
 	"github.com/SemgaTeam/blog/internal/config"
-	"github.com/SemgaTeam/blog/internal/entities"
+	"github.com/SemgaTeam/blog/internal/domain/entities"
 	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/SemgaTeam/blog/internal/infrastructure/repository"
 	"github.com/SemgaTeam/blog/internal/utils"
@@ -11,27 +11,20 @@ import (
 	"context"
 )
 
-type AuthService interface {
-	LogIn(context.Context, string, string) (*entities.AuthToken, *entities.AuthToken, error)
-	SignIn(context.Context, string, string) (*entities.AuthToken, *entities.AuthToken, error)
-	RefreshTokens(context.Context, int, bool) (*entities.AuthToken, *entities.AuthToken, error)
-	GetMe(context.Context, int) (*entities.User, error)
-}
-
-type authService struct {
-	repo authServiceRepo
+type AuthService struct {
+	repo AuthServiceRepo
 	conf *config.Auth
 }
 
-type authServiceRepo struct {
+type AuthServiceRepo struct {
 	token repository.TokenRepository
 	user  repository.UserRepository
 	hash  repository.HashRepository
 }
 
-func NewAuthService(conf *config.Auth, tokenRepo repository.TokenRepository, userRepo repository.UserRepository, hashRepo repository.HashRepository) (AuthService, error) {
-	return &authService{
-		repo: authServiceRepo{
+func NewAuthService(conf *config.Auth, tokenRepo repository.TokenRepository, userRepo repository.UserRepository, hashRepo repository.HashRepository) (*AuthService, error) {
+	return &AuthService{
+		repo: AuthServiceRepo{
 			token: tokenRepo,
 			user:  userRepo,
 			hash:  hashRepo,
@@ -40,7 +33,7 @@ func NewAuthService(conf *config.Auth, tokenRepo repository.TokenRepository, use
 	}, nil
 }
 
-func (s *authService) LogIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error) {
+func (s *AuthService) LogIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	user, err := s.repo.user.GetUserByName(name)
@@ -63,7 +56,7 @@ func (s *authService) LogIn(ctx context.Context, name, password string) (*entiti
 	return authToken, refreshToken, nil
 }
 
-func (s *authService) SignIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error) {
+func (s *AuthService) SignIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	hashedPassword, err := s.repo.hash.HashPassword(password)
@@ -85,7 +78,7 @@ func (s *authService) SignIn(ctx context.Context, name, password string) (*entit
 	return authToken, refreshToken, nil
 }
 
-func (s *authService) RefreshTokens(ctx context.Context, userId int, isAdmin bool) (*entities.AuthToken, *entities.AuthToken, error) {
+func (s *AuthService) RefreshTokens(ctx context.Context, userId int, isAdmin bool) (*entities.AuthToken, *entities.AuthToken, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	authToken, refreshToken, err := s.generateTokens(userId, isAdmin, s.conf.AccessExpirationSecs, s.conf.RefreshExpirationSecs)
@@ -97,7 +90,7 @@ func (s *authService) RefreshTokens(ctx context.Context, userId int, isAdmin boo
 	return authToken, refreshToken, nil
 }
 
-func (s *authService) GetMe(ctx context.Context, userId int) (*entities.User, error) {
+func (s *AuthService) GetMe(ctx context.Context, userId int) (*entities.User, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	user, err := s.repo.user.GetUserById(userId)
@@ -110,7 +103,7 @@ func (s *authService) GetMe(ctx context.Context, userId int) (*entities.User, er
 	return user, nil
 }
 
-func (s *authService) generateTokens(userId int, isAdmin bool, accessExpirationSecs, refreshExpirationSecs int) (*entities.AuthToken, *entities.AuthToken, error) {
+func (s *AuthService) generateTokens(userId int, isAdmin bool, accessExpirationSecs, refreshExpirationSecs int) (*entities.AuthToken, *entities.AuthToken, error) {
 	authClaims := utils.GetClaims(userId, isAdmin, accessExpirationSecs)
 	refreshClaims := utils.GetClaims(userId, isAdmin, refreshExpirationSecs)
 

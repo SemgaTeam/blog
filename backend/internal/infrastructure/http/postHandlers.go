@@ -29,7 +29,7 @@ func (s Server) CreatePost(c echo.Context) error {
 		return e.BadRequest(err, "invalid request")
 	}
 
-	post, err := s.service.post.CreatePost(ctx, request.Name, request.Contents, id)
+	post, err := s.service.CreatePost(ctx, request.Name, request.Contents, id)
 	if err != nil {
 		return err
 	}
@@ -42,14 +42,14 @@ func (s Server) CreatePost(c echo.Context) error {
 func (s Server) GetPost(c echo.Context) error {
 	ctx := c.Request().Context()
 	var response dto.GetPostResponse
-	
+
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return e.BadRequest(err, "invalid id")
 	}
 
-	post, err := s.service.post.GetPost(ctx, id)
+	post, err := s.service.GetPost(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (s Server) GetPosts(c echo.Context) error {
 		return e.BadRequest(err, "invalid query parameters")
 	}
 
-	posts, total, err := s.service.post.GetPosts(ctx, params)
+	posts, total, err := s.service.GetPosts(ctx, params)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func (s Server) UpdatePost(c echo.Context) error {
 		return e.BadRequest(err, "invalid request")
 	}
 
-	post, err := s.service.post.UpdatePost(ctx, id, request.Name, request.Contents)
+	post, err := s.service.UpdatePost(ctx, id, request.Name, request.Contents)
 	if err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func (s Server) DeletePost(c echo.Context) error {
 		return e.BadRequest(err, "invalid id")
 	}
 
-	_, err = s.service.post.DeletePost(ctx, id)
+	_, err = s.service.DeletePost(ctx, id)
 	if err != nil {
 		return err
 	}

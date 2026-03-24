@@ -1,8 +1,8 @@
 package domain
 
 import (
+	"github.com/SemgaTeam/blog/internal/domain/entities"
 	"github.com/SemgaTeam/blog/internal/dto"
-	"github.com/SemgaTeam/blog/internal/entities"
 	"github.com/SemgaTeam/blog/mock"
 	"github.com/golang/mock/gomock"
 

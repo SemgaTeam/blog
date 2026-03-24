@@ -2,8 +2,8 @@ package http
 
 import (
 	"github.com/SemgaTeam/blog/internal/dto"
-	"github.com/SemgaTeam/blog/internal/utils"
 	e "github.com/SemgaTeam/blog/internal/error"
+	"github.com/SemgaTeam/blog/internal/utils"
 	"github.com/labstack/echo/v4"
 
 	"net/http"
@@ -11,14 +11,14 @@ import (
 )
 
 func (s Server) LogIn(c echo.Context) error {
-	var request dto.LogInRequest	
+	var request dto.LogInRequest
 	ctx := c.Request().Context()
 
 	if err := c.Bind(&request); err != nil {
 		return e.BadRequest(err, "invalid request body")
 	}
 
-	accessToken, refreshToken, err := s.service.auth.LogIn(ctx, request.Name, request.Password)
+	accessToken, refreshToken, err := s.service.LogIn(ctx, request.Name, request.Password)
 	if err != nil {
 		return err
 	}
@@ -33,14 +33,14 @@ func (s Server) LogIn(c echo.Context) error {
 }
 
 func (s Server) SignIn(c echo.Context) error {
-	var request dto.SignInRequest	
+	var request dto.SignInRequest
 	ctx := c.Request().Context()
 
 	if err := c.Bind(&request); err != nil {
 		return e.BadRequest(err, "invalid request body")
 	}
 
-	accessToken, refreshToken, err := s.service.auth.SignIn(ctx, request.Name, request.Password)
+	accessToken, refreshToken, err := s.service.SignIn(ctx, request.Name, request.Password)
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func (s Server) RefreshTokens(c echo.Context) error {
 
 	isAdmin := claims.IsAdmin
 
-	accessToken, refreshToken, err := s.service.auth.RefreshTokens(ctx, id, isAdmin)
+	accessToken, refreshToken, err := s.service.RefreshTokens(ctx, id, isAdmin)
 
 	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, "/", accessToken.Claims.ExpiresAt.Time)
 	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, "/", refreshToken.Claims.ExpiresAt.Time)
@@ -109,7 +109,7 @@ func (s Server) GetMe(c echo.Context) error {
 		return e.Unauthorized(err, "invalid user id")
 	}
 
-	user, err := s.service.auth.GetMe(ctx, id)
+	user, err := s.service.GetMe(ctx, id)
 	if err != nil {
 		return err
 	}

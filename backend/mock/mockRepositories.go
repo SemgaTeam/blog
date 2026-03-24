@@ -7,8 +7,8 @@ package mock
 import (
 	reflect "reflect"
 
+	entities "github.com/SemgaTeam/blog/internal/domain/entities"
 	dto "github.com/SemgaTeam/blog/internal/dto"
-	entities "github.com/SemgaTeam/blog/internal/entities"
 	gomock "github.com/golang/mock/gomock"
 )
 
