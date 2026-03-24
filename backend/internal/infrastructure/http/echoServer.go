@@ -1,69 +1,28 @@
 package http
 
 import (
+	"github.com/SemgaTeam/blog/internal/application"
 	"github.com/SemgaTeam/blog/internal/config"
-	"github.com/SemgaTeam/blog/internal/service"
 	"github.com/SemgaTeam/blog/internal/log"
-	"github.com/SemgaTeam/blog/internal/repository"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 
 	"fmt"
 )
 
 type Server struct {
-	echo *echo.Echo
-	service Service
-	conf *config.Config
+	echo    *echo.Echo
+	service application.Service
+	conf    *config.Config
 }
 
-type Service struct {
-	post service.PostService
-	user service.UserService
-	auth service.AuthService
-}
-
-func NewEchoServer(conf *config.Config, db *gorm.DB) (*Server, error) {
+func NewEchoServer(conf *config.Config, service application.Service) (*Server, error) {
 	echo := echo.New()
-
-	postRepo := repository.NewPostRepository(db)
-	log.Log.Debug("initialized post repository")
-
-	postService := service.NewPostService(postRepo)
-	log.Log.Debug("initialized post service")
-
-	userRepo := repository.NewUserRepository(db)
-	log.Log.Debug("initialized user repository")
-
-	hashRepo := repository.NewHashRepository(conf.Hash)
-	log.Log.Debug("initialized hash repository")
-
-	userService := service.NewUserService(userRepo)
-	log.Log.Debug("initialized user service")
-
-	tokenRepo, err := repository.NewTokenRepository(conf)
-	if err != nil {
-		log.Log.Fatal("token repository initialization error", zap.Error(err))
-		return nil, err
-	}
-	log.Log.Debug("initialized token repository")
-
-	authService, err := service.NewAuthService(conf.Auth, tokenRepo, userRepo, hashRepo)
-	if err != nil {
-		log.Log.Fatal("auth service initialization error", zap.Error(err))
-		return nil, err
-	}
-	log.Log.Debug("initialized auth service")
 
 	s := Server{
 		echo,
-		Service{
-			postService,
-			userService,
-			authService,
-		},
+		service,
 		conf,
 	}
 
@@ -77,18 +36,18 @@ func (s Server) setupRouter() {
 	s.echo.Pre(middleware.RemoveTrailingSlash())
 	s.echo.Use(middleware.Recover())
 	s.echo.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-		LogStatus: true,
-		LogURIPath: true,
-		LogMethod: true,
-		LogError: true,
+		LogStatus:    true,
+		LogURIPath:   true,
+		LogMethod:    true,
+		LogError:     true,
 		LogRequestID: true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-		if v.Error != nil {
-			log.Log.Info(fmt.Sprintf("%v %v %v", v.Method, v.URIPath, v.Status), zap.Error(v.Error), zap.String("request_id", v.RequestID))
-		}	else {
-			log.Log.Info(fmt.Sprintf("%v %v %v", v.Method, v.URIPath, v.Status), zap.String("request_id", v.RequestID))
-		}
-		return nil
+			if v.Error != nil {
+				log.Log.Info(fmt.Sprintf("%v %v %v", v.Method, v.URIPath, v.Status), zap.Error(v.Error), zap.String("request_id", v.RequestID))
+			} else {
+				log.Log.Info(fmt.Sprintf("%v %v %v", v.Method, v.URIPath, v.Status), zap.String("request_id", v.RequestID))
+			}
+			return nil
 		},
 	}))
 	s.echo.Use(middleware.RequestID())
@@ -133,8 +92,8 @@ func (s Server) setupRouter() {
 func (s Server) Start() {
 	s.echo.Logger.Fatal(
 		s.echo.Start(
-			fmt.Sprintf("%s:%s", 
-				s.conf.App.Address, 
+			fmt.Sprintf("%s:%s",
+				s.conf.App.Address,
 				s.conf.App.Port,
 			),
 		),
