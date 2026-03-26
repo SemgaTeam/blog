@@ -3,7 +3,6 @@ package domain
 import (
 	"github.com/SemgaTeam/blog/internal/domain/entities"
 	"github.com/SemgaTeam/blog/internal/dto"
-	"github.com/SemgaTeam/blog/internal/infrastructure/repository"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"go.uber.org/zap"
 
@@ -11,14 +10,14 @@ import (
 )
 
 type PostServiceRepo struct {
-	post repository.PostRepository
+	post PostRepository
 }
 
 type PostService struct {
 	repo PostServiceRepo
 }
 
-func NewPostService(postRepo repository.PostRepository) *PostService {
+func NewPostService(postRepo PostRepository) *PostService {
 	return &PostService{
 		repo: PostServiceRepo{
 			postRepo,
@@ -29,8 +28,12 @@ func NewPostService(postRepo repository.PostRepository) *PostService {
 func (s *PostService) CreatePost(ctx context.Context, name, contents string, authorId int) (*entities.Post, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	post, err := s.repo.post.CreatePost(name, contents, authorId)
+	post, err := entities.NewPost(name, contents, authorId)
 	if err != nil {
+		return nil, err
+	}
+
+	if err = s.repo.post.Save(post); err != nil {
 		log.Info("create post error", zap.Error(err))
 		return nil, err
 	}
@@ -42,7 +45,7 @@ func (s *PostService) CreatePost(ctx context.Context, name, contents string, aut
 func (s *PostService) GetPost(ctx context.Context, id int) (*entities.Post, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	post, err := s.repo.post.GetPost(id)
+	post, err := s.repo.post.ById(id)
 	if err != nil {
 		log.Info("get post error", zap.Error(err), zap.Int("id", id))
 		return nil, err
@@ -55,7 +58,7 @@ func (s *PostService) GetPost(ctx context.Context, id int) (*entities.Post, erro
 func (s *PostService) GetPosts(ctx context.Context, params dto.GetPostParams) ([]entities.Post, int64, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	posts, total, err := s.repo.post.GetPosts(params)
+	posts, total, err := s.repo.post.ByParams(params)
 	if err != nil {
 		log.Info("get posts error", zap.Error(err))
 		return nil, 0, err
@@ -68,21 +71,25 @@ func (s *PostService) GetPosts(ctx context.Context, params dto.GetPostParams) ([
 func (s *PostService) UpdatePost(ctx context.Context, id int, name, contents string) (*entities.Post, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	post, err := s.repo.post.UpdatePost(id, name, contents)
-	if err != nil {
+	post := entities.Post{
+		ID:       id,
+		Name:     name,
+		Contents: contents,
+	}
+
+	if err := s.repo.post.Save(&post); err != nil {
 		log.Info("update post error", zap.Error(err))
 		return nil, err
 	}
 
 	log.Debug("updated post", zap.Int("id", post.ID))
-	return post, nil
+	return &post, nil
 }
 
 func (s *PostService) DeletePost(ctx context.Context, id int) (int, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	_, err := s.repo.post.DeletePost(id)
-	if err != nil {
+	if err := s.repo.post.Delete(id); err != nil {
 		log.Info("delete post error", zap.Error(err))
 		return 0, err
 	}

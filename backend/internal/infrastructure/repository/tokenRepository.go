@@ -7,16 +7,12 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type TokenRepository interface {
-	GenerateAndSignToken(entities.Claims) (*entities.AuthToken, error)
-}
-
-type tokenRepository struct {
+type TokenRepository struct {
 	conf          *config.Auth
 	signingMethod jwt.SigningMethod
 }
 
-func NewTokenRepository(conf *config.Config) (TokenRepository, error) {
+func NewTokenRepository(conf *config.Config) (*TokenRepository, error) {
 	var signingMethod jwt.SigningMethod
 
 	switch conf.Auth.SigningMethod {
@@ -26,13 +22,13 @@ func NewTokenRepository(conf *config.Config) (TokenRepository, error) {
 		return nil, e.ErrTokenSigningMethodNotAllowed
 	}
 
-	return &tokenRepository{
+	return &TokenRepository{
 		conf:          conf.Auth,
 		signingMethod: signingMethod,
 	}, nil
 }
 
-func (r *tokenRepository) GenerateAndSignToken(claims entities.Claims) (*entities.AuthToken, error) {
+func (r *TokenRepository) GenerateAndSignToken(claims entities.Claims) (*entities.AuthToken, error) {
 	rawToken := jwt.NewWithClaims(r.signingMethod, claims)
 	signedToken, err := r.signToken(rawToken)
 	if err != nil {
@@ -45,7 +41,7 @@ func (r *tokenRepository) GenerateAndSignToken(claims entities.Claims) (*entitie
 	}, nil
 }
 
-func (r *tokenRepository) signToken(token *jwt.Token) (string, error) {
+func (r *TokenRepository) signToken(token *jwt.Token) (string, error) {
 	tokenStr, err := token.SignedString([]byte(r.conf.Secret))
 	if err != nil {
 		return "", e.ErrSigningToken

@@ -11,26 +11,17 @@ import (
 	"errors"
 )
 
-type UserRepository interface {
-	CreateUser(string, string) (*entities.User, error)
-	GetUserById(int) (*entities.User, error)
-	GetUserByName(string) (*entities.User, error)
-	GetUsers(dto.GetUserParams) ([]entities.User, int64, error)
-	UpdateUser(int, string, string) (*entities.User, error)
-	DeleteUser(int) (int, error)
-}
-
-type userRepository struct {
+type UserRepository struct {
 	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) UserRepository {
-	return &userRepository{
+func NewUserRepository(db *gorm.DB) *UserRepository {
+	return &UserRepository{
 		db: db,
 	}
 }
 
-func (r *userRepository) CreateUser(name, password string) (*entities.User, error) {
+func (r *UserRepository) CreateUser(name, password string) (*entities.User, error) {
 	user := entities.User{
 		Name:     name,
 		Password: password,
@@ -47,7 +38,7 @@ func (r *userRepository) CreateUser(name, password string) (*entities.User, erro
 	return &user, nil
 }
 
-func (r *userRepository) GetUserById(id int) (*entities.User, error) {
+func (r *UserRepository) GetUserById(id int) (*entities.User, error) {
 	var user entities.User
 
 	if err := r.db.Where("id = ?", id).First(&user).Error; err != nil {
@@ -61,7 +52,7 @@ func (r *userRepository) GetUserById(id int) (*entities.User, error) {
 	return &user, nil
 }
 
-func (r *userRepository) GetUserByName(name string) (*entities.User, error) {
+func (r *UserRepository) GetUserByName(name string) (*entities.User, error) {
 	var user entities.User
 
 	if err := r.db.Where("name = ?", name).First(&user).Error; err != nil {
@@ -75,7 +66,7 @@ func (r *userRepository) GetUserByName(name string) (*entities.User, error) {
 	return &user, nil
 }
 
-func (r *userRepository) GetUsers(params dto.GetUserParams) ([]entities.User, int64, error) {
+func (r *UserRepository) GetUsers(params dto.GetUserParams) ([]entities.User, int64, error) {
 	var users []entities.User
 	var total int64
 
@@ -113,7 +104,7 @@ func (r *userRepository) GetUsers(params dto.GetUserParams) ([]entities.User, in
 	return users, total, nil
 }
 
-func (r *userRepository) UpdateUser(id int, name, password string) (*entities.User, error) {
+func (r *UserRepository) UpdateUser(id int, name, password string) (*entities.User, error) {
 	user := entities.User{
 		ID:       id,
 		Name:     name,
@@ -130,7 +121,7 @@ func (r *userRepository) UpdateUser(id int, name, password string) (*entities.Us
 	return &user, nil
 }
 
-func (r *userRepository) DeleteUser(id int) (int, error) {
+func (r *UserRepository) DeleteUser(id int) (int, error) {
 	user := entities.User{
 		ID: id,
 	}

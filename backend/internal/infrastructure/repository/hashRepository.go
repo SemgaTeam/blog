@@ -5,22 +5,17 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type HashRepository interface {
-	HashPassword(string) (string, error)
-	IsPasswordValid(string, string) bool
-}
-
-type hashRepository struct {
+type HashRepository struct {
 	conf *config.Hash
 }
 
-func NewHashRepository(conf *config.Hash) HashRepository {
-	return &hashRepository{
+func NewHashRepository(conf *config.Hash) *HashRepository {
+	return &HashRepository{
 		conf: conf,
 	}
 }
 
-func (r *hashRepository) HashPassword(raw string) (string, error) {
+func (r *HashRepository) HashPassword(raw string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(raw), r.conf.Cost)
 	if err != nil {
 		return "", err
@@ -29,7 +24,7 @@ func (r *hashRepository) HashPassword(raw string) (string, error) {
 	return string(bytes), nil
 }
 
-func (r *hashRepository) IsPasswordValid(rawPassword, hash string) bool {
+func (r *HashRepository) IsPasswordValid(rawPassword, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(rawPassword))
 	return err == nil
 }

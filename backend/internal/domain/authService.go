@@ -4,7 +4,6 @@ import (
 	"github.com/SemgaTeam/blog/internal/config"
 	"github.com/SemgaTeam/blog/internal/domain/entities"
 	e "github.com/SemgaTeam/blog/internal/error"
-	"github.com/SemgaTeam/blog/internal/infrastructure/repository"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"go.uber.org/zap"
 
@@ -17,12 +16,12 @@ type AuthService struct {
 }
 
 type AuthServiceRepo struct {
-	token repository.TokenRepository
-	user  repository.UserRepository
-	hash  repository.HashRepository
+	token TokenRepository
+	user  UserRepository
+	hash  HashRepository
 }
 
-func NewAuthService(conf *config.Auth, tokenRepo repository.TokenRepository, userRepo repository.UserRepository, hashRepo repository.HashRepository) (*AuthService, error) {
+func NewAuthService(conf *config.Auth, tokenRepo TokenRepository, userRepo UserRepository, hashRepo HashRepository) (*AuthService, error) {
 	return &AuthService{
 		repo: AuthServiceRepo{
 			token: tokenRepo,
@@ -36,7 +35,7 @@ func NewAuthService(conf *config.Auth, tokenRepo repository.TokenRepository, use
 func (s *AuthService) LogIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	user, err := s.repo.user.GetUserByName(name)
+	user, err := s.repo.user.ByName(name)
 	if err != nil {
 		log.Info("user not found by name", zap.Error(err))
 		return nil, nil, err
@@ -65,8 +64,12 @@ func (s *AuthService) SignIn(ctx context.Context, name, password string) (*entit
 		return nil, nil, err
 	}
 
-	user, err := s.repo.user.CreateUser(name, hashedPassword)
+	user, err := entities.NewUser(name, hashedPassword)
 	if err != nil {
+		return nil, nil, err
+	}
+
+	if err = s.repo.user.Save(user); err != nil {
 		return nil, nil, err
 	}
 
@@ -93,7 +96,7 @@ func (s *AuthService) RefreshTokens(ctx context.Context, userId int, isAdmin boo
 func (s *AuthService) GetMe(ctx context.Context, userId int) (*entities.User, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	user, err := s.repo.user.GetUserById(userId)
+	user, err := s.repo.user.ById(userId)
 	if err != nil {
 		log.Info("failed getting user", zap.Error(err), zap.Int("id", userId))
 		return nil, err
