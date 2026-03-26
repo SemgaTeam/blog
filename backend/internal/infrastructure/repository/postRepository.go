@@ -6,7 +6,6 @@ import (
 	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 
 	"errors"
 )
@@ -21,21 +20,15 @@ func NewPostRepository(db *gorm.DB) *PostRepository {
 	}
 }
 
-func (r *PostRepository) CreatePost(name, contents string, authorId int) (*entities.Post, error) {
-	post := entities.Post{
-		Name:     name,
-		Contents: contents,
-		AuthorID: authorId,
+func (r *PostRepository) Save(post *entities.Post) error {
+	if err := r.db.Save(post).Error; err != nil {
+		return e.Unknown(err)
 	}
 
-	if err := r.db.Create(&post).Error; err != nil {
-		return nil, e.Unknown(err)
-	}
-
-	return &post, nil
+	return nil
 }
 
-func (r *PostRepository) GetPost(id int) (*entities.Post, error) {
+func (r *PostRepository) ById(id int) (*entities.Post, error) {
 	var post entities.Post
 
 	if err := r.db.Where("id = ?", id).Take(&post).Error; err != nil {
@@ -49,7 +42,7 @@ func (r *PostRepository) GetPost(id int) (*entities.Post, error) {
 	return &post, nil
 }
 
-func (r *PostRepository) GetPosts(params dto.GetPostParams) ([]entities.Post, int64, error) {
+func (r *PostRepository) ByParams(params dto.GetPostParams) ([]entities.Post, int64, error) {
 	var posts []entities.Post
 	var total int64
 
@@ -91,24 +84,7 @@ func (r *PostRepository) GetPosts(params dto.GetPostParams) ([]entities.Post, in
 	return posts, total, nil
 }
 
-func (r *PostRepository) UpdatePost(id int, name, contents string) (*entities.Post, error) {
-	post := entities.Post{
-		ID:       id,
-		Name:     name,
-		Contents: contents,
-	}
-
-	if err := r.db.
-		Clauses(clause.Returning{}).
-		Updates(&post).
-		Scan(&post).Error; err != nil {
-		return nil, e.Unknown(err)
-	}
-
-	return &post, nil
-}
-
-func (r *PostRepository) DeletePost(id int) (int, error) {
+func (r *PostRepository) Delete(id int) error {
 	post := entities.Post{
 		ID: id,
 	}
@@ -116,12 +92,12 @@ func (r *PostRepository) DeletePost(id int) (int, error) {
 	res := r.db.Delete(post)
 
 	if err := res.Error; err != nil {
-		return 0, e.Unknown(err)
+		return e.Unknown(err)
 	}
 
 	if res.RowsAffected == 0 {
-		return 0, e.ErrPostNotFound
+		return e.ErrPostNotFound
 	}
 
-	return id, nil
+	return nil
 }

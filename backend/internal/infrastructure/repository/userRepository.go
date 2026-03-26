@@ -6,7 +6,6 @@ import (
 	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 
 	"errors"
 )
@@ -21,24 +20,15 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	}
 }
 
-func (r *UserRepository) CreateUser(name, password string) (*entities.User, error) {
-	user := entities.User{
-		Name:     name,
-		Password: password,
+func (r *UserRepository) Save(user *entities.User) error {
+	if err := r.db.Save(user).Error; err != nil {
+		return e.Unknown(err)
 	}
 
-	if err := r.db.Create(&user).Error; err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return nil, e.ErrUserAlreadyExists
-		} else {
-			return nil, e.Unknown(err)
-		}
-	}
-
-	return &user, nil
+	return nil
 }
 
-func (r *UserRepository) GetUserById(id int) (*entities.User, error) {
+func (r *UserRepository) ById(id int) (*entities.User, error) {
 	var user entities.User
 
 	if err := r.db.Where("id = ?", id).First(&user).Error; err != nil {
@@ -52,7 +42,7 @@ func (r *UserRepository) GetUserById(id int) (*entities.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepository) GetUserByName(name string) (*entities.User, error) {
+func (r *UserRepository) ByName(name string) (*entities.User, error) {
 	var user entities.User
 
 	if err := r.db.Where("name = ?", name).First(&user).Error; err != nil {
@@ -66,7 +56,7 @@ func (r *UserRepository) GetUserByName(name string) (*entities.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepository) GetUsers(params dto.GetUserParams) ([]entities.User, int64, error) {
+func (r *UserRepository) ByParams(params dto.GetUserParams) ([]entities.User, int64, error) {
 	var users []entities.User
 	var total int64
 
@@ -104,24 +94,7 @@ func (r *UserRepository) GetUsers(params dto.GetUserParams) ([]entities.User, in
 	return users, total, nil
 }
 
-func (r *UserRepository) UpdateUser(id int, name, password string) (*entities.User, error) {
-	user := entities.User{
-		ID:       id,
-		Name:     name,
-		Password: password,
-	}
-
-	if err := r.db.
-		Clauses(clause.Returning{}).
-		Updates(&user).
-		Scan(&user).Error; err != nil {
-		return nil, e.Unknown(err)
-	}
-
-	return &user, nil
-}
-
-func (r *UserRepository) DeleteUser(id int) (int, error) {
+func (r *UserRepository) Delete(id int) error {
 	user := entities.User{
 		ID: id,
 	}
@@ -129,12 +102,12 @@ func (r *UserRepository) DeleteUser(id int) (int, error) {
 	res := r.db.Delete(&user)
 
 	if err := res.Error; err != nil {
-		return 0, e.Unknown(err)
+		return e.Unknown(err)
 	}
 
 	if res.RowsAffected == 0 {
-		return 0, e.ErrUserNotFound
+		return e.ErrUserNotFound
 	}
 
-	return id, nil
+	return nil
 }

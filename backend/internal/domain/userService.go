@@ -3,7 +3,6 @@ package domain
 import (
 	"github.com/SemgaTeam/blog/internal/domain/entities"
 	"github.com/SemgaTeam/blog/internal/dto"
-	"github.com/SemgaTeam/blog/internal/infrastructure/repository"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"go.uber.org/zap"
 
@@ -15,10 +14,10 @@ type UserService struct {
 }
 
 type UserServiceRepo struct {
-	user repository.UserRepository
+	user UserRepository
 }
 
-func NewUserService(userRepo repository.UserRepository) *UserService {
+func NewUserService(userRepo UserRepository) *UserService {
 	return &UserService{
 		UserServiceRepo{
 			user: userRepo,
@@ -29,8 +28,12 @@ func NewUserService(userRepo repository.UserRepository) *UserService {
 func (s *UserService) CreateUser(ctx context.Context, name, password string) (*entities.User, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	user, err := s.repo.user.CreateUser(name, password)
+	user, err := entities.NewUser(name, password)
 	if err != nil {
+		return nil, err
+	}
+
+	if err = s.repo.user.Save(user); err != nil {
 		log.Info("create user error", zap.Error(err))
 		return nil, err
 	}
@@ -42,7 +45,7 @@ func (s *UserService) CreateUser(ctx context.Context, name, password string) (*e
 func (s *UserService) GetUserById(ctx context.Context, id int) (*entities.User, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	user, err := s.repo.user.GetUserById(id)
+	user, err := s.repo.user.ById(id)
 	if err != nil {
 		log.Info("get user error", zap.Error(err), zap.Int("id", id))
 		return nil, err
@@ -55,7 +58,7 @@ func (s *UserService) GetUserById(ctx context.Context, id int) (*entities.User, 
 func (s *UserService) GetUsers(ctx context.Context, params dto.GetUserParams) ([]entities.User, int64, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	users, total, err := s.repo.user.GetUsers(params)
+	users, total, err := s.repo.user.ByParams(params)
 	if err != nil {
 		log.Info("get posts error", zap.Error(err))
 		return nil, 0, err
@@ -68,8 +71,12 @@ func (s *UserService) GetUsers(ctx context.Context, params dto.GetUserParams) ([
 func (s *UserService) UpdateUser(ctx context.Context, id int, name, password string) (*entities.User, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	user, err := s.repo.user.UpdateUser(id, name, password)
+	user, err := entities.UpdateUser(id, name, password)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := s.repo.user.Save(user); err != nil {
 		log.Info("update user error", zap.Error(err), zap.Int("id", id))
 		return nil, err
 	}
@@ -81,8 +88,7 @@ func (s *UserService) UpdateUser(ctx context.Context, id int, name, password str
 func (s *UserService) DeleteUser(ctx context.Context, id int) (int, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	_, err := s.repo.user.DeleteUser(id)
-	if err != nil {
+	if err := s.repo.user.Delete(id); err != nil {
 		log.Info("delete user error", zap.Error(err), zap.Int("id", id))
 		return 0, err
 	}

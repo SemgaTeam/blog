@@ -71,19 +71,18 @@ func (s *PostService) GetPosts(ctx context.Context, params dto.GetPostParams) ([
 func (s *PostService) UpdatePost(ctx context.Context, id int, name, contents string) (*entities.Post, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	post := entities.Post{
-		ID:       id,
-		Name:     name,
-		Contents: contents,
+	post, err := entities.UpdatePost(id, name, contents)
+	if err != nil {
+		return nil, err
 	}
 
-	if err := s.repo.post.Save(&post); err != nil {
+	if err := s.repo.post.Save(post); err != nil {
 		log.Info("update post error", zap.Error(err))
 		return nil, err
 	}
 
 	log.Debug("updated post", zap.Int("id", post.ID))
-	return &post, nil
+	return post, nil
 }
 
 func (s *PostService) DeletePost(ctx context.Context, id int) (int, error) {

@@ -29,6 +29,19 @@ func NewPost(name, contents string, authorId int) (*Post, error) {
 	}, nil
 }
 
+func UpdatePost(id int, name, contents string) (*Post, error) {
+	if name == "" {
+		return nil, e.ErrInvalidPost
+	}
+
+	return &Post{
+		ID:       id,
+		Name:     name,
+		Contents: contents,
+	}, nil
+
+}
+
 func (p *Post) ToDTO() dto.Post {
 	return dto.Post{
 		ID:        p.ID,

@@ -26,6 +26,18 @@ func NewUser(name, password string) (*User, error) {
 	}, nil
 }
 
+func UpdateUser(id int, name, password string) (*User, error) {
+	if name == "" || password == "" {
+		return nil, e.ErrInvalidUser
+	}
+
+	return &User{
+		ID:       id,
+		Name:     name,
+		Password: password,
+	}, nil
+}
+
 func (u *User) ToDTO() dto.User {
 	return dto.User{
 		ID:        u.ID,
