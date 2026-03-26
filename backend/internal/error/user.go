@@ -1,10 +1,6 @@
 package error
 
-import (
-	"errors"
-)
-
 var (
-	ErrUserAlreadyExists = errors.New("user already exists")
-	ErrUserNotFound = errors.New("user not found")
+	ErrUserAlreadyExists = NewError("user already exists")
+	ErrUserNotFound      = NewError("user not found")
 )

@@ -5,5 +5,6 @@ import (
 )
 
 var (
+	ErrUnauthorized       = errors.New("unauthorized")
 	ErrInvalidCredentials = errors.New("invalid credentials")
 )

@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/SemgaTeam/blog/internal/dto"
-	e "github.com/SemgaTeam/blog/internal/error"
+	e "github.com/SemgaTeam/blog/internal/infrastructure/http/error"
 	"github.com/labstack/echo/v4"
 
 	"net/http"
@@ -54,7 +54,7 @@ func (s Server) GetUsers(c echo.Context) error {
 	var params dto.GetUserParams
 
 	if err := c.Bind(&params); err != nil {
-		return e.ErrInvalidQueryParam
+		return e.BadRequest(err, "invalid query params")
 	}
 
 	users, total, err := s.service.GetUsers(ctx, params)

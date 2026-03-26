@@ -10,7 +10,6 @@ import (
 	"gorm.io/gorm"
 
 	"context"
-	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -61,17 +60,6 @@ func HandleSorting(q *gorm.DB, s dto.Sorting, allowedFields []string) error { //
 		return nil
 	}
 
-	allowed := false
-	for _, allowedField := range allowedFields {
-		if s.SortField == allowedField {
-			allowed = true
-		}
-	}
-
-	if !allowed {
-		return e.BadRequest(nil, "sort field is not allowed")
-	}
-
 	q = q.Order(s.SortField + " " + s.SortOrder)
 
 	return nil
@@ -91,7 +79,7 @@ func GetClaimsFromContext(c echo.Context, tokenType string) (*entities.Claims, e
 	token := c.Get(tokenType).(*jwt.Token)
 	claims, ok := token.Claims.(*entities.Claims)
 	if ok != true {
-		return nil, e.Unauthorized(errors.New("no claims"), "token is invalid")
+		return nil, e.ErrUnauthorized
 	}
 
 	return claims, nil

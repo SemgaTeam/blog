@@ -1,10 +1,6 @@
 package error
 
-import (
-	"errors"
-)
-
 var (
-	ErrPostNotFound = errors.New("post not found")
-	ErrPostInvalidRequest = errors.New("post invalid request")
+	ErrPostNotFound       = NewError("post not found")
+	ErrPostInvalidRequest = NewError("post invalid request")
 )

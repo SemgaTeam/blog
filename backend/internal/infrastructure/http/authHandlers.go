@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/SemgaTeam/blog/internal/dto"
-	e "github.com/SemgaTeam/blog/internal/error"
+	e "github.com/SemgaTeam/blog/internal/infrastructure/http/error"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"github.com/labstack/echo/v4"
 

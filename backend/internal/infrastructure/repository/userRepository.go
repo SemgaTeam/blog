@@ -40,7 +40,7 @@ func (r *userRepository) CreateUser(name, password string) (*entities.User, erro
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return nil, e.ErrUserAlreadyExists
 		} else {
-			return nil, e.Internal(err)
+			return nil, e.Unknown(err)
 		}
 	}
 
@@ -54,7 +54,7 @@ func (r *userRepository) GetUserById(id int) (*entities.User, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, e.ErrUserNotFound
 		} else {
-			return nil, e.Internal(err)
+			return nil, e.Unknown(err)
 		}
 	}
 
@@ -68,7 +68,7 @@ func (r *userRepository) GetUserByName(name string) (*entities.User, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, e.ErrUserNotFound
 		} else {
-			return nil, e.Internal(err)
+			return nil, e.Unknown(err)
 		}
 	}
 
@@ -95,7 +95,7 @@ func (r *userRepository) GetUsers(params dto.GetUserParams) ([]entities.User, in
 	}
 
 	if err := q.Count(&total).Error; err != nil {
-		return nil, 0, e.Internal(err)
+		return nil, 0, e.Unknown(err)
 	}
 
 	utils.HandlePagination(q, params.Pagination)
@@ -103,7 +103,7 @@ func (r *userRepository) GetUsers(params dto.GetUserParams) ([]entities.User, in
 	res := q.Find(&users)
 
 	if err := res.Error; err != nil {
-		return nil, 0, e.Internal(err)
+		return nil, 0, e.Unknown(err)
 	}
 
 	if total == 0 {
@@ -124,7 +124,7 @@ func (r *userRepository) UpdateUser(id int, name, password string) (*entities.Us
 		Clauses(clause.Returning{}).
 		Updates(&user).
 		Scan(&user).Error; err != nil {
-		return nil, e.Internal(err)
+		return nil, e.Unknown(err)
 	}
 
 	return &user, nil
@@ -138,11 +138,11 @@ func (r *userRepository) DeleteUser(id int) (int, error) {
 	res := r.db.Delete(&user)
 
 	if err := res.Error; err != nil {
-		return 0, e.Internal(err)
+		return 0, e.Unknown(err)
 	}
 
 	if res.RowsAffected == 0 {
-		return 0, e.NotFound(e.ErrUserNotFound, "user not found")
+		return 0, e.ErrUserNotFound
 	}
 
 	return id, nil

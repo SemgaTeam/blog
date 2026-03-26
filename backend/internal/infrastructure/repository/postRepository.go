@@ -37,11 +37,7 @@ func (r *postRepository) CreatePost(name, contents string, authorId int) (*entit
 	}
 
 	if err := r.db.Create(&post).Error; err != nil {
-		if errors.Is(err, gorm.ErrCheckConstraintViolated) {
-			return nil, e.BadRequest(err, "invalid request body")
-		} else {
-			return nil, e.Internal(err)
-		}
+		return nil, e.Unknown(err)
 	}
 
 	return &post, nil
@@ -54,7 +50,7 @@ func (r *postRepository) GetPost(id int) (*entities.Post, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, e.ErrPostNotFound
 		} else {
-			return nil, e.Internal(err)
+			return nil, e.Unknown(err)
 		}
 	}
 
@@ -85,7 +81,7 @@ func (r *postRepository) GetPosts(params dto.GetPostParams) ([]entities.Post, in
 	}
 
 	if err := q.Count(&total).Error; err != nil {
-		return nil, 0, e.Internal(err)
+		return nil, 0, e.Unknown(err)
 	}
 
 	utils.HandlePagination(q, params.Pagination)
@@ -93,7 +89,7 @@ func (r *postRepository) GetPosts(params dto.GetPostParams) ([]entities.Post, in
 	res := q.Find(&posts)
 
 	if err := res.Error; err != nil {
-		return nil, 0, e.Internal(err)
+		return nil, 0, e.Unknown(err)
 	}
 
 	if total == 0 {
@@ -114,11 +110,7 @@ func (r *postRepository) UpdatePost(id int, name, contents string) (*entities.Po
 		Clauses(clause.Returning{}).
 		Updates(&post).
 		Scan(&post).Error; err != nil {
-		if errors.Is(err, gorm.ErrCheckConstraintViolated) {
-			return nil, e.BadRequest(err, "invalid request body")
-		} else {
-			return nil, e.Internal(err)
-		}
+		return nil, e.Unknown(err)
 	}
 
 	return &post, nil
@@ -132,7 +124,7 @@ func (r *postRepository) DeletePost(id int) (int, error) {
 	res := r.db.Delete(post)
 
 	if err := res.Error; err != nil {
-		return 0, e.Internal(err)
+		return 0, e.Unknown(err)
 	}
 
 	if res.RowsAffected == 0 {
