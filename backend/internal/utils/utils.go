@@ -2,7 +2,6 @@ package utils
 
 import (
 	"github.com/SemgaTeam/blog/internal/domain/entities"
-	"github.com/SemgaTeam/blog/internal/dto"
 	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
@@ -55,12 +54,12 @@ func SetAuthCookie(name, value, path string, expires time.Time) *http.Cookie {
 	return &c
 }
 
-func HandlePagination(q *gorm.DB, p dto.Pagination) {
-	if p.Page != 0 && p.PerPage != 0 {
+func HandlePagination(q *gorm.DB, page, perPage int) {
+	if page != 0 && perPage != 0 {
 		q = q.
-			Limit(p.PerPage).
+			Limit(perPage).
 			Offset(
-				(p.Page - 1) * p.PerPage,
+				(page - 1) * perPage,
 			)
 	}
 }

@@ -4,35 +4,25 @@ import (
 	e "github.com/SemgaTeam/blog/internal/error"
 )
 
-type SortField string
-type SortOrder string
-
-var (
-	IDField        SortField = "id"
-	NameField      SortField = "name"
-	CreatedAtField SortField = "created_at"
-	UpdatedAtField SortField = "updated_at"
-)
-
-var validUsersortingFields = map[SortField]struct{}{
-	IDField:        {},
-	NameField:      {},
-	CreatedAtField: {},
+var validUsersortingFields = map[string]struct{}{
+	"id":         {},
+	"name":       {},
+	"created_at": {},
 }
 
-var validPostsortingFields = map[SortField]struct{}{
-	IDField:        {},
-	NameField:      {},
-	CreatedAtField: {},
-	UpdatedAtField: {},
+var validPostsortingFields = map[string]struct{}{
+	"id":         {},
+	"name":       {},
+	"created_at": {},
+	"updated_at": {},
 }
 
 type sorting struct {
-	SortField SortField `json:"sortField"`
-	SortOrder SortOrder `json:"sortOrder"`
+	SortField string
+	SortOrder string
 }
 
-func NewUsersorting(field SortField, order SortOrder) (*sorting, error) {
+func NewUserSorting(field, order string) (*sorting, error) {
 	if _, ok := validUsersortingFields[field]; !ok {
 		return nil, e.ErrInvalidSortingField
 	}
@@ -47,7 +37,7 @@ func NewUsersorting(field SortField, order SortOrder) (*sorting, error) {
 	}, nil
 }
 
-func NewPostSorting(field SortField, order SortOrder) (*sorting, error) {
+func NewPostSorting(field, order string) (*sorting, error) {
 	if _, ok := validPostsortingFields[field]; !ok {
 		return nil, e.ErrInvalidSortingField
 	}

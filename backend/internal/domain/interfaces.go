@@ -2,7 +2,6 @@ package domain
 
 import (
 	"github.com/SemgaTeam/blog/internal/domain/entities"
-	"github.com/SemgaTeam/blog/internal/dto"
 )
 
 type UserRepository interface {
@@ -11,13 +10,13 @@ type UserRepository interface {
 
 	ById(id int) (*entities.User, error)
 	ByName(name string) (*entities.User, error)
-	ByParams(params dto.GetUserParams) ([]entities.User, int64, error)
+	ByParams(params GetUserParams) ([]entities.User, int64, error)
 }
 
 type PostRepository interface {
 	Save(post *entities.Post) error
 	ById(id int) (*entities.Post, error)
-	ByParams(params dto.GetPostParams) ([]entities.Post, int64, error)
+	ByParams(params GetPostParams) ([]entities.Post, int64, error)
 	Delete(id int) error
 }
 

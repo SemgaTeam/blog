@@ -1,8 +1,8 @@
 package repository
 
 import (
+	"github.com/SemgaTeam/blog/internal/domain"
 	"github.com/SemgaTeam/blog/internal/domain/entities"
-	"github.com/SemgaTeam/blog/internal/dto"
 	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"gorm.io/gorm"
@@ -42,7 +42,7 @@ func (r *PostRepository) ById(id int) (*entities.Post, error) {
 	return &post, nil
 }
 
-func (r *PostRepository) ByParams(params dto.GetPostParams) ([]entities.Post, int64, error) {
+func (r *PostRepository) ByParams(params domain.GetPostParams) ([]entities.Post, int64, error) {
 	var posts []entities.Post
 	var total int64
 
@@ -61,14 +61,14 @@ func (r *PostRepository) ByParams(params dto.GetPostParams) ([]entities.Post, in
 	}
 
 	if params.Sorting.SortField != "" && params.Sorting.SortOrder != "" {
-		q = q.Order(params.Sorting.SortField + " " + params.Sorting.SortOrder)
+		q = q.Order(string(params.Sorting.SortField) + " " + string(params.Sorting.SortOrder))
 	}
 
 	if err := q.Count(&total).Error; err != nil {
 		return nil, 0, e.Unknown(err)
 	}
 
-	utils.HandlePagination(q, params.Pagination)
+	utils.HandlePagination(q, params.Pagination.Page, params.Pagination.PerPage)
 
 	res := q.Find(&posts)
 

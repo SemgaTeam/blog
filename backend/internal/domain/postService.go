@@ -58,7 +58,25 @@ func (s *PostService) GetPost(ctx context.Context, id int) (*entities.Post, erro
 func (s *PostService) GetPosts(ctx context.Context, params dto.GetPostParams) ([]entities.Post, int64, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	posts, total, err := s.repo.post.ByParams(params)
+	pagination, err := NewPagination(params.Pagination.Page, params.Pagination.PerPage)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	sorting, err := NewPostSorting(params.Sorting.SortField, params.Sorting.SortOrder)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	validatedParams := GetPostParams{
+		IDs:        params.IDs,
+		Name:       params.Name,
+		AuthorID:   params.AuthorID,
+		Pagination: *pagination,
+		Sorting:    *sorting,
+	}
+
+	posts, total, err := s.repo.post.ByParams(validatedParams)
 	if err != nil {
 		log.Info("get posts error", zap.Error(err))
 		return nil, 0, err

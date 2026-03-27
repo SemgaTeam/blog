@@ -52,7 +52,24 @@ func (s *UserService) GetUserById(ctx context.Context, id int) (*entities.User, 
 func (s *UserService) GetUsers(ctx context.Context, params dto.GetUserParams) ([]entities.User, int64, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	users, total, err := s.user.ByParams(params)
+	pagination, err := NewPagination(params.Pagination.Page, params.Pagination.PerPage)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	sorting, err := NewPostSorting(params.Sorting.SortField, params.Sorting.SortOrder)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	validatedParams := GetUserParams{
+		IDs:        params.IDs,
+		Name:       params.Name,
+		Pagination: *pagination,
+		Sorting:    *sorting,
+	}
+
+	users, total, err := s.user.ByParams(validatedParams)
 	if err != nil {
 		log.Info("get posts error", zap.Error(err))
 		return nil, 0, err
