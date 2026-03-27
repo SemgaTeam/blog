@@ -60,9 +60,8 @@ func (r *PostRepository) ByParams(params dto.GetPostParams) ([]entities.Post, in
 		q = q.Where("author_id = ?", params.AuthorID)
 	}
 
-	allowedSortingFields := []string{"id", "created_at", "updated_at"}
-	if err := utils.HandleSorting(q, params.Sorting, allowedSortingFields); err != nil {
-		return nil, 0, err
+	if params.Sorting.SortField != "" && params.Sorting.SortOrder != "" {
+		q = q.Order(params.Sorting.SortField + " " + params.Sorting.SortOrder)
 	}
 
 	if err := q.Count(&total).Error; err != nil {

@@ -10,18 +10,12 @@ import (
 )
 
 type UserService struct {
-	repo UserServiceRepo
-}
-
-type UserServiceRepo struct {
 	user UserRepository
 }
 
 func NewUserService(userRepo UserRepository) *UserService {
 	return &UserService{
-		UserServiceRepo{
-			user: userRepo,
-		},
+		user: userRepo,
 	}
 }
 
@@ -33,7 +27,7 @@ func (s *UserService) CreateUser(ctx context.Context, name, password string) (*e
 		return nil, err
 	}
 
-	if err = s.repo.user.Save(user); err != nil {
+	if err = s.user.Save(user); err != nil {
 		log.Info("create user error", zap.Error(err))
 		return nil, err
 	}
@@ -45,7 +39,7 @@ func (s *UserService) CreateUser(ctx context.Context, name, password string) (*e
 func (s *UserService) GetUserById(ctx context.Context, id int) (*entities.User, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	user, err := s.repo.user.ById(id)
+	user, err := s.user.ById(id)
 	if err != nil {
 		log.Info("get user error", zap.Error(err), zap.Int("id", id))
 		return nil, err
@@ -58,7 +52,7 @@ func (s *UserService) GetUserById(ctx context.Context, id int) (*entities.User, 
 func (s *UserService) GetUsers(ctx context.Context, params dto.GetUserParams) ([]entities.User, int64, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	users, total, err := s.repo.user.ByParams(params)
+	users, total, err := s.user.ByParams(params)
 	if err != nil {
 		log.Info("get posts error", zap.Error(err))
 		return nil, 0, err
@@ -76,7 +70,7 @@ func (s *UserService) UpdateUser(ctx context.Context, id int, name, password str
 		return nil, err
 	}
 
-	if err := s.repo.user.Save(user); err != nil {
+	if err := s.user.Save(user); err != nil {
 		log.Info("update user error", zap.Error(err), zap.Int("id", id))
 		return nil, err
 	}
@@ -88,7 +82,7 @@ func (s *UserService) UpdateUser(ctx context.Context, id int, name, password str
 func (s *UserService) DeleteUser(ctx context.Context, id int) (int, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	if err := s.repo.user.Delete(id); err != nil {
+	if err := s.user.Delete(id); err != nil {
 		log.Info("delete user error", zap.Error(err), zap.Int("id", id))
 		return 0, err
 	}

@@ -55,16 +55,6 @@ func SetAuthCookie(name, value, path string, expires time.Time) *http.Cookie {
 	return &c
 }
 
-func HandleSorting(q *gorm.DB, s dto.Sorting, allowedFields []string) error { // handle sorting requests
-	if s.SortField == "" {
-		return nil
-	}
-
-	q = q.Order(s.SortField + " " + s.SortOrder)
-
-	return nil
-}
-
 func HandlePagination(q *gorm.DB, p dto.Pagination) {
 	if p.Page != 0 && p.PerPage != 0 {
 		q = q.
