@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/SemgaTeam/blog/internal/application"
 	"github.com/SemgaTeam/blog/internal/config"
-	"github.com/SemgaTeam/blog/internal/domain"
+	"github.com/SemgaTeam/blog/internal/domain/usecases"
 	"github.com/SemgaTeam/blog/internal/infrastructure/db"
 	"github.com/SemgaTeam/blog/internal/infrastructure/http"
 	"github.com/SemgaTeam/blog/internal/infrastructure/repository"
@@ -33,7 +33,7 @@ func main() {
 	postRepo := repository.NewPostRepository(db)
 	log.Log.Debug("initialized post repository")
 
-	postService := domain.NewPostService(postRepo)
+	postService := usecases.NewPostService(postRepo)
 	log.Log.Debug("initialized post service")
 
 	userRepo := repository.NewUserRepository(db)
@@ -42,7 +42,7 @@ func main() {
 	hashRepo := repository.NewHashRepository(conf.Hash)
 	log.Log.Debug("initialized hash repository")
 
-	userService := domain.NewUserService(userRepo)
+	userService := usecases.NewUserService(userRepo)
 	log.Log.Debug("initialized user service")
 
 	tokenRepo, err := repository.NewTokenRepository(conf)
@@ -52,7 +52,7 @@ func main() {
 	}
 	log.Log.Debug("initialized token repository")
 
-	authService, err := domain.NewAuthService(conf.Auth, tokenRepo, userRepo, hashRepo)
+	authService, err := usecases.NewAuthService(conf.Auth, tokenRepo, userRepo, hashRepo)
 	if err != nil {
 		log.Log.Fatal("auth service initialization error", zap.Error(err))
 		panic(err)

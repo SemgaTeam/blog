@@ -1,7 +1,8 @@
-package domain
+package usecases
 
 import (
 	"github.com/SemgaTeam/blog/internal/domain/entities"
+	"github.com/SemgaTeam/blog/internal/domain"
 	"github.com/SemgaTeam/blog/internal/dto"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"go.uber.org/zap"
@@ -10,14 +11,14 @@ import (
 )
 
 type PostServiceRepo struct {
-	post PostRepository
+	post domain.PostRepository
 }
 
 type PostService struct {
 	repo PostServiceRepo
 }
 
-func NewPostService(postRepo PostRepository) *PostService {
+func NewPostService(postRepo domain.PostRepository) *PostService {
 	return &PostService{
 		repo: PostServiceRepo{
 			postRepo,
@@ -58,17 +59,17 @@ func (s *PostService) GetPost(ctx context.Context, id int) (*entities.Post, erro
 func (s *PostService) GetPosts(ctx context.Context, params dto.GetPostParams) ([]entities.Post, int64, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	pagination, err := NewPagination(params.Pagination.Page, params.Pagination.PerPage)
+	pagination, err := domain.NewPagination(params.Pagination.Page, params.Pagination.PerPage)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	sorting, err := NewPostSorting(params.Sorting.SortField, params.Sorting.SortOrder)
+	sorting, err := domain.NewPostSorting(params.Sorting.SortField, params.Sorting.SortOrder)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	validatedParams := GetPostParams{
+	validatedParams := domain.GetPostParams{
 		IDs:        params.IDs,
 		Name:       params.Name,
 		AuthorID:   params.AuthorID,

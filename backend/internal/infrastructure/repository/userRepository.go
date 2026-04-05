@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/SemgaTeam/blog/internal/domain/entities"
-	"github.com/SemgaTeam/blog/internal/dto"
+	"github.com/SemgaTeam/blog/internal/domain"
 	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"gorm.io/gorm"
@@ -56,7 +56,7 @@ func (r *UserRepository) ByName(name string) (*entities.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepository) ByParams(params dto.GetUserParams) ([]entities.User, int64, error) {
+func (r *UserRepository) ByParams(params domain.GetUserParams) ([]entities.User, int64, error) {
 	var users []entities.User
 	var total int64
 

@@ -1,8 +1,9 @@
-package domain
+package usecases
 
 import (
 	"github.com/SemgaTeam/blog/internal/config"
 	"github.com/SemgaTeam/blog/internal/domain/entities"
+	"github.com/SemgaTeam/blog/internal/domain"
 	e "github.com/SemgaTeam/blog/internal/error"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"go.uber.org/zap"
@@ -16,12 +17,12 @@ type AuthService struct {
 }
 
 type AuthServiceRepo struct {
-	token TokenRepository
-	user  UserRepository
-	hash  HashRepository
+	token domain.TokenRepository
+	user  domain.UserRepository
+	hash  domain.HashRepository
 }
 
-func NewAuthService(conf *config.Auth, tokenRepo TokenRepository, userRepo UserRepository, hashRepo HashRepository) (*AuthService, error) {
+func NewAuthService(conf *config.Auth, tokenRepo domain.TokenRepository, userRepo domain.UserRepository, hashRepo domain.HashRepository) (*AuthService, error) {
 	return &AuthService{
 		repo: AuthServiceRepo{
 			token: tokenRepo,

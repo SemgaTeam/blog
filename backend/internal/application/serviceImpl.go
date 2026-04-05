@@ -1,16 +1,16 @@
 package application
 
 import (
-	"github.com/SemgaTeam/blog/internal/domain"
+	"github.com/SemgaTeam/blog/internal/domain/usecases"
 )
 
 type service struct {
-	*domain.AuthService
-	*domain.UserService
-	*domain.PostService
+	*usecases.AuthService
+	*usecases.UserService
+	*usecases.PostService
 }
 
-func NewService(postService *domain.PostService, userService *domain.UserService, authService *domain.AuthService) Service {
+func NewService(postService *usecases.PostService, userService *usecases.UserService, authService *usecases.AuthService) Service {
 	return &service{
 		AuthService: authService,
 		UserService: userService,

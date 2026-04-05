@@ -1,7 +1,8 @@
-package domain
+package usecases
 
 import (
 	"github.com/SemgaTeam/blog/internal/domain/entities"
+	"github.com/SemgaTeam/blog/internal/domain"
 	"github.com/SemgaTeam/blog/internal/dto"
 	"github.com/SemgaTeam/blog/internal/utils"
 	"go.uber.org/zap"
@@ -10,10 +11,10 @@ import (
 )
 
 type UserService struct {
-	user UserRepository
+	user domain.UserRepository
 }
 
-func NewUserService(userRepo UserRepository) *UserService {
+func NewUserService(userRepo domain.UserRepository) *UserService {
 	return &UserService{
 		user: userRepo,
 	}
@@ -52,17 +53,17 @@ func (s *UserService) GetUserById(ctx context.Context, id int) (*entities.User, 
 func (s *UserService) GetUsers(ctx context.Context, params dto.GetUserParams) ([]entities.User, int64, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	pagination, err := NewPagination(params.Pagination.Page, params.Pagination.PerPage)
+	pagination, err := domain.NewPagination(params.Pagination.Page, params.Pagination.PerPage)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	sorting, err := NewPostSorting(params.Sorting.SortField, params.Sorting.SortOrder)
+	sorting, err := domain.NewPostSorting(params.Sorting.SortField, params.Sorting.SortOrder)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	validatedParams := GetUserParams{
+	validatedParams := domain.GetUserParams{
 		IDs:        params.IDs,
 		Name:       params.Name,
 		Pagination: *pagination,
