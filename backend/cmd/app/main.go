@@ -35,17 +35,11 @@ func main() {
 	postRepo := repository.NewPostRepository(db)
 	log.Log.Debug("initialized post repository")
 
-	postService := usecases.NewPostService(postRepo)
-	log.Log.Debug("initialized post service")
-
 	userRepo := repository.NewUserRepository(db)
 	log.Log.Debug("initialized user repository")
 
 	hashRepo := repository.NewHashRepository(conf.Hash)
 	log.Log.Debug("initialized hash repository")
-
-	userService := usecases.NewUserService(userRepo)
-	log.Log.Debug("initialized user service")
 
 	tokenRepo, err := repository.NewTokenRepository(conf)
 	if err != nil {
@@ -54,14 +48,20 @@ func main() {
 	}
 	log.Log.Debug("initialized token repository")
 
-	authService, err := usecases.NewAuthService(conf.Auth, tokenRepo, userRepo, hashRepo)
+	userUC := usecases.NewUserUseCase(userRepo)
+	log.Log.Debug("initialized user service")
+
+	postUC := usecases.NewPostUseCase(postRepo)
+	log.Log.Debug("initialized post service")
+
+	authUC, err := usecases.NewAuthUseCase(conf.Auth, tokenRepo, userRepo, hashRepo)
 	if err != nil {
 		log.Log.Fatal("auth service initialization error", zap.Error(err))
 		panic(err)
 	}
 	log.Log.Debug("initialized auth service")
 
-	service := application.NewService(postService, userService, authService)
+	service := application.NewService(postUC, userUC, authUC)
 
 	s, err := http.NewEchoServer(conf, service)
 	if err != nil {

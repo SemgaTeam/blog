@@ -10,17 +10,17 @@ import (
 	"context"
 )
 
-type UserService struct {
+type UserUseCase struct {
 	user domain.UserRepository
 }
 
-func NewUserService(userRepo domain.UserRepository) *UserService {
-	return &UserService{
+func NewUserUseCase(userRepo domain.UserRepository) *UserUseCase {
+	return &UserUseCase{
 		user: userRepo,
 	}
 }
 
-func (s *UserService) CreateUser(ctx context.Context, name, password string) (*entities.User, error) {
+func (s *UserUseCase) CreateUser(ctx context.Context, name, password string) (*entities.User, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	user, err := entities.NewUser(name, password)
@@ -37,7 +37,7 @@ func (s *UserService) CreateUser(ctx context.Context, name, password string) (*e
 	return user, nil
 }
 
-func (s *UserService) GetUserById(ctx context.Context, id int) (*entities.User, error) {
+func (s *UserUseCase) GetUserById(ctx context.Context, id int) (*entities.User, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	user, err := s.user.ById(id)
@@ -50,7 +50,7 @@ func (s *UserService) GetUserById(ctx context.Context, id int) (*entities.User, 
 	return user, nil
 }
 
-func (s *UserService) GetUsers(ctx context.Context, params dto.GetUserParams) ([]entities.User, int64, error) {
+func (s *UserUseCase) GetUsers(ctx context.Context, params dto.GetUserParams) ([]entities.User, int64, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	pagination, err := domain.NewPagination(params.Pagination.Page, params.Pagination.PerPage)
@@ -80,7 +80,7 @@ func (s *UserService) GetUsers(ctx context.Context, params dto.GetUserParams) ([
 	return users, total, nil
 }
 
-func (s *UserService) UpdateUser(ctx context.Context, id int, name, password string) (*entities.User, error) {
+func (s *UserUseCase) UpdateUser(ctx context.Context, id int, name, password string) (*entities.User, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	user, err := entities.UpdateUser(id, name, password)
@@ -97,7 +97,7 @@ func (s *UserService) UpdateUser(ctx context.Context, id int, name, password str
 	return user, nil
 }
 
-func (s *UserService) DeleteUser(ctx context.Context, id int) (int, error) {
+func (s *UserUseCase) DeleteUser(ctx context.Context, id int) (int, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	if err := s.user.Delete(id); err != nil {

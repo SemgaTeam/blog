@@ -10,23 +10,17 @@ import (
 	"context"
 )
 
-type PostServiceRepo struct {
-	post domain.PostRepository
+type PostUseCase struct {
+	repo domain.PostRepository
 }
 
-type PostService struct {
-	repo PostServiceRepo
-}
-
-func NewPostService(postRepo domain.PostRepository) *PostService {
-	return &PostService{
-		repo: PostServiceRepo{
-			postRepo,
-		},
+func NewPostUseCase(postRepo domain.PostRepository) *PostUseCase {
+	return &PostUseCase{
+		repo: postRepo,
 	}
 }
 
-func (s *PostService) CreatePost(ctx context.Context, name, contents string, authorId int) (*entities.Post, error) {
+func (s *PostUseCase) CreatePost(ctx context.Context, name, contents string, authorId int) (*entities.Post, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	post, err := entities.NewPost(name, contents, authorId)
@@ -34,7 +28,7 @@ func (s *PostService) CreatePost(ctx context.Context, name, contents string, aut
 		return nil, err
 	}
 
-	if err = s.repo.post.Save(post); err != nil {
+	if err = s.repo.Save(post); err != nil {
 		log.Info("create post error", zap.Error(err))
 		return nil, err
 	}
@@ -43,10 +37,10 @@ func (s *PostService) CreatePost(ctx context.Context, name, contents string, aut
 	return post, nil
 }
 
-func (s *PostService) GetPost(ctx context.Context, id int) (*entities.Post, error) {
+func (s *PostUseCase) GetPost(ctx context.Context, id int) (*entities.Post, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	post, err := s.repo.post.ById(id)
+	post, err := s.repo.ById(id)
 	if err != nil {
 		log.Info("get post error", zap.Error(err), zap.Int("id", id))
 		return nil, err
@@ -56,7 +50,7 @@ func (s *PostService) GetPost(ctx context.Context, id int) (*entities.Post, erro
 	return post, nil
 }
 
-func (s *PostService) GetPosts(ctx context.Context, params dto.GetPostParams) ([]entities.Post, int64, error) {
+func (s *PostUseCase) GetPosts(ctx context.Context, params dto.GetPostParams) ([]entities.Post, int64, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	pagination, err := domain.NewPagination(params.Pagination.Page, params.Pagination.PerPage)
@@ -77,7 +71,7 @@ func (s *PostService) GetPosts(ctx context.Context, params dto.GetPostParams) ([
 		Sorting:    *sorting,
 	}
 
-	posts, total, err := s.repo.post.ByParams(validatedParams)
+	posts, total, err := s.repo.ByParams(validatedParams)
 	if err != nil {
 		log.Info("get posts error", zap.Error(err))
 		return nil, 0, err
@@ -87,7 +81,7 @@ func (s *PostService) GetPosts(ctx context.Context, params dto.GetPostParams) ([
 	return posts, total, nil
 }
 
-func (s *PostService) UpdatePost(ctx context.Context, id int, name, contents string) (*entities.Post, error) {
+func (s *PostUseCase) UpdatePost(ctx context.Context, id int, name, contents string) (*entities.Post, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	post, err := entities.UpdatePost(id, name, contents)
@@ -95,7 +89,7 @@ func (s *PostService) UpdatePost(ctx context.Context, id int, name, contents str
 		return nil, err
 	}
 
-	if err := s.repo.post.Save(post); err != nil {
+	if err := s.repo.Save(post); err != nil {
 		log.Info("update post error", zap.Error(err))
 		return nil, err
 	}
@@ -104,10 +98,10 @@ func (s *PostService) UpdatePost(ctx context.Context, id int, name, contents str
 	return post, nil
 }
 
-func (s *PostService) DeletePost(ctx context.Context, id int) (int, error) {
+func (s *PostUseCase) DeletePost(ctx context.Context, id int) (int, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	if err := s.repo.post.Delete(id); err != nil {
+	if err := s.repo.Delete(id); err != nil {
 		log.Info("delete post error", zap.Error(err))
 		return 0, err
 	}

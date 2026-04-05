@@ -5,15 +5,15 @@ import (
 )
 
 type service struct {
-	*usecases.AuthService
-	*usecases.UserService
-	*usecases.PostService
+	*usecases.AuthUseCase
+	*usecases.UserUseCase
+	*usecases.PostUseCase
 }
 
-func NewService(postService *usecases.PostService, userService *usecases.UserService, authService *usecases.AuthService) Service {
+func NewService(postUseCase *usecases.PostUseCase, userUseCase *usecases.UserUseCase, authUseCase *usecases.AuthUseCase) Service {
 	return &service{
-		AuthService: authService,
-		UserService: userService,
-		PostService: postService,
+		AuthUseCase: authUseCase,
+		UserUseCase: userUseCase,
+		PostUseCase: postUseCase,
 	}
 }

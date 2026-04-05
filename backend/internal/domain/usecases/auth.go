@@ -11,38 +11,32 @@ import (
 	"context"
 )
 
-type AuthService struct {
-	repo AuthServiceRepo
+type AuthUseCase struct {
 	conf *config.Auth
-}
-
-type AuthServiceRepo struct {
 	token domain.TokenRepository
 	user  domain.UserRepository
 	hash  domain.HashRepository
 }
 
-func NewAuthService(conf *config.Auth, tokenRepo domain.TokenRepository, userRepo domain.UserRepository, hashRepo domain.HashRepository) (*AuthService, error) {
-	return &AuthService{
-		repo: AuthServiceRepo{
-			token: tokenRepo,
-			user:  userRepo,
-			hash:  hashRepo,
-		},
+func NewAuthUseCase(conf *config.Auth, tokenRepo domain.TokenRepository, userRepo domain.UserRepository, hashRepo domain.HashRepository) (*AuthUseCase, error) {
+	return &AuthUseCase{
 		conf: conf,
+		token: tokenRepo,
+		user:  userRepo,
+		hash:  hashRepo,
 	}, nil
 }
 
-func (s *AuthService) LogIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error) {
+func (s *AuthUseCase) LogIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	user, err := s.repo.user.ByName(name)
+	user, err := s.user.ByName(name)
 	if err != nil {
 		log.Info("user not found by name", zap.Error(err))
 		return nil, nil, err
 	}
 
-	if !s.repo.hash.IsPasswordValid(password, user.Password) {
+	if !s.hash.IsPasswordValid(password, user.Password) {
 		log.Info("invalid password", zap.Int("user_id", user.ID))
 		return nil, nil, e.ErrInvalidCredentials
 	}
@@ -56,10 +50,10 @@ func (s *AuthService) LogIn(ctx context.Context, name, password string) (*entiti
 	return authToken, refreshToken, nil
 }
 
-func (s *AuthService) SignIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error) {
+func (s *AuthUseCase) SignIn(ctx context.Context, name, password string) (*entities.AuthToken, *entities.AuthToken, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	hashedPassword, err := s.repo.hash.HashPassword(password)
+	hashedPassword, err := s.hash.HashPassword(password)
 	if err != nil {
 		log.Error("hashing failed", zap.Error(err))
 		return nil, nil, err
@@ -70,7 +64,7 @@ func (s *AuthService) SignIn(ctx context.Context, name, password string) (*entit
 		return nil, nil, err
 	}
 
-	if err = s.repo.user.Save(user); err != nil {
+	if err = s.user.Save(user); err != nil {
 		return nil, nil, err
 	}
 
@@ -82,7 +76,7 @@ func (s *AuthService) SignIn(ctx context.Context, name, password string) (*entit
 	return authToken, refreshToken, nil
 }
 
-func (s *AuthService) RefreshTokens(ctx context.Context, userId int, isAdmin bool) (*entities.AuthToken, *entities.AuthToken, error) {
+func (s *AuthUseCase) RefreshTokens(ctx context.Context, userId int, isAdmin bool) (*entities.AuthToken, *entities.AuthToken, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
 	authToken, refreshToken, err := s.generateTokens(userId, isAdmin, s.conf.AccessExpirationSecs, s.conf.RefreshExpirationSecs)
@@ -94,10 +88,10 @@ func (s *AuthService) RefreshTokens(ctx context.Context, userId int, isAdmin boo
 	return authToken, refreshToken, nil
 }
 
-func (s *AuthService) GetMe(ctx context.Context, userId int) (*entities.User, error) {
+func (s *AuthUseCase) GetMe(ctx context.Context, userId int) (*entities.User, error) {
 	log := utils.GetLoggerFromContext(ctx)
 
-	user, err := s.repo.user.ById(userId)
+	user, err := s.user.ById(userId)
 	if err != nil {
 		log.Info("failed getting user", zap.Error(err), zap.Int("id", userId))
 		return nil, err
@@ -107,16 +101,16 @@ func (s *AuthService) GetMe(ctx context.Context, userId int) (*entities.User, er
 	return user, nil
 }
 
-func (s *AuthService) generateTokens(userId int, isAdmin bool, accessExpirationSecs, refreshExpirationSecs int) (*entities.AuthToken, *entities.AuthToken, error) {
+func (s *AuthUseCase) generateTokens(userId int, isAdmin bool, accessExpirationSecs, refreshExpirationSecs int) (*entities.AuthToken, *entities.AuthToken, error) {
 	authClaims := utils.GetClaims(userId, isAdmin, accessExpirationSecs)
 	refreshClaims := utils.GetClaims(userId, isAdmin, refreshExpirationSecs)
 
-	authToken, err := s.repo.token.GenerateAndSignToken(authClaims)
+	authToken, err := s.token.GenerateAndSignToken(authClaims)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	refreshToken, err := s.repo.token.GenerateAndSignToken(refreshClaims)
+	refreshToken, err := s.token.GenerateAndSignToken(refreshClaims)
 	if err != nil {
 		return nil, nil, err
 	}
