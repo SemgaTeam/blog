@@ -78,7 +78,7 @@ func (r *UserRepository) ByParams(params domain.GetUserParams) ([]entities.User,
 		return nil, 0, e.Unknown(err)
 	}
 
-	utils.HandlePagination(q, params.Pagination.Page, params.Pagination.PerPage)
+	q = utils.HandlePagination(q, params.Pagination.Page, params.Pagination.PerPage)
 
 	res := q.Find(&users)
 

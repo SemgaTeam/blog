@@ -54,7 +54,7 @@ func SetAuthCookie(name, value, path string, expires time.Time) *http.Cookie {
 	return &c
 }
 
-func HandlePagination(q *gorm.DB, page, perPage int) {
+func HandlePagination(q *gorm.DB, page, perPage int) *gorm.DB {
 	if page != 0 && perPage != 0 {
 		q = q.
 			Limit(perPage).
@@ -62,12 +62,14 @@ func HandlePagination(q *gorm.DB, page, perPage int) {
 				(page - 1) * perPage,
 			)
 	}
+
+	return q
 }
 
 func GetClaimsFromContext(c echo.Context, tokenType string) (*entities.Claims, error) {
 	token := c.Get(tokenType).(*jwt.Token)
 	claims, ok := token.Claims.(*entities.Claims)
-	if ok != true {
+	if !ok {
 		return nil, e.ErrUnauthorized
 	}
 

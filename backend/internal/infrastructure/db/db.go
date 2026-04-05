@@ -25,13 +25,20 @@ func NewPostgresConnection(conf *config.Config) (*gorm.DB, error) {
 	return db, nil
 }
 
-func RunMigrations(conf *config.Postgres, migrationsPath string) error {
+func RunMigrations(conf *config.Postgres, migrationsPath string) (err error) {
 	dsn := postgresDSN(conf)
 	sqlDb, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return err
 	}
-	defer sqlDb.Close()
+
+	defer func() {
+		if cerr := sqlDb.Close(); cerr != nil {
+			if err == nil {
+				err = cerr
+			} 		
+		}
+	}()
 
 	if err := goose.Up(sqlDb, migrationsPath); err != nil {
 		return err

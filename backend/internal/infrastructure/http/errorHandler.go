@@ -3,13 +3,16 @@ package http
 import (
 	d "github.com/SemgaTeam/blog/internal/error"
 	h "github.com/SemgaTeam/blog/internal/infrastructure/http/error"
+	"github.com/SemgaTeam/blog/internal/utils"
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 
 	"errors"
 	"fmt"
 )
 
 func ErrorHandler(err error, c echo.Context) {
+	log := utils.GetLoggerFromContext(c.Request().Context())
 	var httpErr *h.HTTPError
 	var echoHttpErr *echo.HTTPError
 
@@ -38,8 +41,10 @@ func ErrorHandler(err error, c echo.Context) {
 	}
 
 	if !c.Response().Committed {
-		c.JSON(httpErr.Code, map[string]string{
+		if err := c.JSON(httpErr.Code, map[string]string{
 			"error": httpErr.Message,
-		})
+		}); err != nil {
+			log.Error("json error", zap.Error(err))	
+		}
 	}
 }

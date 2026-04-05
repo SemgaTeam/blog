@@ -85,6 +85,9 @@ func (s Server) RefreshTokens(c echo.Context) error {
 	isAdmin := claims.IsAdmin
 
 	accessToken, refreshToken, err := s.service.RefreshTokens(ctx, id, isAdmin)
+	if err != nil {
+		return err
+	}
 
 	accessCookie := utils.SetAuthCookie("accessToken", accessToken.Value, "/", accessToken.Claims.ExpiresAt.Time)
 	refreshCookie := utils.SetAuthCookie("refreshToken", refreshToken.Value, "/", refreshToken.Claims.ExpiresAt.Time)

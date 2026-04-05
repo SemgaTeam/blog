@@ -14,7 +14,9 @@ import (
 func main() {
 	conf := config.GetConfig()
 	log.InitLogger("logs/log")
-	defer log.Log.Sync()
+	defer func(){ 
+		_ = log.Log.Sync()
+	}()
 
 	migrationPath := "migrations"
 	if err := db.RunMigrations(conf.Postgres, migrationPath); err != nil {

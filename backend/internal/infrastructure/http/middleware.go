@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/SemgaTeam/blog/internal/domain/entities"
+	"github.com/SemgaTeam/blog/internal/domain"
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -18,8 +19,8 @@ func SetLoggerMiddleware(baseLogger *zap.Logger) echo.MiddlewareFunc {
 
 			logger := baseLogger.With(zap.String("request_id", reqID))
 
-			ctx := context.WithValue(c.Request().Context(), "requestId", reqID)
-			ctx = context.WithValue(ctx, "logger", logger)
+			ctx := context.WithValue(c.Request().Context(), domain.RequestIDKey, reqID)
+			ctx = context.WithValue(ctx, domain.LoggerKey, logger)
 
 			c.SetRequest(c.Request().WithContext(ctx))
 
